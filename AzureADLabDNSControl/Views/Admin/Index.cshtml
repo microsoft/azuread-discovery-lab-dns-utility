@@ -1,0 +1,13 @@
+﻿@using Infra;
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+Domain List:<br />
+@foreach(var item in Settings.DomainList)
+{
+    <div>@item</div>
+}

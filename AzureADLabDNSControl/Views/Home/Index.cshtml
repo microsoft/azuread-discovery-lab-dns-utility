@@ -1,0 +1,35 @@
+﻿@model AzureADLabDNSControl.Controllers.TeamAuthentication
+
+@{
+    ViewBag.Title = "Home";
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <h3>Team login</h3>
+
+        <section id="loginForm">
+            @using (Html.BeginForm("Index", "Home", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    @Html.LabelFor(m => m.LabCode, new { @class = "col-md-3 control-label" })
+                    <div class="col-md-9">
+                        @Html.TextBoxFor(m => m.LabCode, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.TeamAuth, new { @class = "col-md-3 control-label" })
+                    <div class="col-md-9">
+                        @Html.PasswordFor(m => m.TeamAuth, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-4">
+                        <input type="submit" value="Log in" class="btn btn-default pull-right" />
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+</div>
