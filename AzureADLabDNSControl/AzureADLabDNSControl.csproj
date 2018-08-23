@@ -227,6 +227,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\api\DnsController.cs" />
+    <Compile Include="Controllers\api\LabController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -236,8 +237,12 @@
     <Compile Include="Infra\Settings.cs" />
     <Compile Include="Infra\TableStorage.cs" />
     <Compile Include="Infra\Util.cs" />
+    <Compile Include="Models\DnsDTO.cs" />
     <Compile Include="Models\DomAssignment.cs" />
+    <Compile Include="Models\LabDTO.cs" />
     <Compile Include="Models\LabSettings.cs" />
+    <Compile Include="Models\NewLabDTO.cs" />
+    <Compile Include="Models\TeamAuthentication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -246,27 +251,60 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
-    <Content Include="favicon.ico" />
+    <Content Include="Content\Images\403.jpg" />
+    <Content Include="Content\Images\404.jpg" />
+    <Content Include="Content\Images\ajax-loader.png" />
+    <Content Include="Content\Images\error.png" />
+    <Content Include="Content\Images\ErrorBG.jpg" />
+    <Content Include="Content\Images\gritter-light.png" />
+    <Content Include="Content\Images\gritter-long.png" />
+    <Content Include="Content\Images\gritter.png" />
+    <Content Include="Content\Images\ie-spacer.gif" />
+    <Content Include="Content\Images\info.png" />
+    <Content Include="Content\Images\LockUnlock.jpg" />
+    <Content Include="Content\Images\microsoft-gray.png" />
+    <Content Include="Content\Images\microsoftlogo.png" />
+    <Content Include="Content\Images\success.png" />
+    <Content Include="Content\Images\user.png" />
+    <Content Include="Content\Images\warning.png" />
+    <Content Include="Content\jquery.gritter.css" />
+    <Content Include="favicon2.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Scripts\bootstrap-datetimepicker.js" />
+    <Content Include="Scripts\bootstrap-datetimepicker.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Properties\PublishProfiles\AzureADLabDNSControl - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\discoverazuread - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
+    <Content Include="Scripts\global.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.gritter.js" />
+    <Content Include="Scripts\jquery.gritter.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\moment-timezone-utils.js" />
+    <Content Include="Scripts\moment-timezone-with-data-2012-2022.js" />
+    <Content Include="Scripts\moment-timezone-with-data-2012-2022.min.js" />
+    <Content Include="Scripts\moment-timezone-with-data.js" />
+    <Content Include="Scripts\moment-timezone-with-data.min.js" />
+    <Content Include="Scripts\moment-timezone.js" />
+    <Content Include="Scripts\moment-timezone.min.js" />
+    <Content Include="Scripts\moment-with-locales.js" />
+    <Content Include="Scripts\moment-with-locales.min.js" />
+    <Content Include="Scripts\moment.js" />
+    <Content Include="Scripts\moment.min.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -286,6 +324,7 @@
     <Content Include="Views\Account\SignOutCallback.cshtml" />
     <Content Include="Views\Admin\Index.cshtml" />
     <Content Include="Views\Home\TeamLogin.cshtml" />
+    <Content Include="Views\Admin\LabReport.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

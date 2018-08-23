@@ -17,8 +17,98 @@
 }
 
 /* Set width on the form input elements since they're 100% wide by default */
-input,
-select,
-textarea {
+input:not(.max),
+select:not(.max),
+textarea:not(.max) {
     max-width: 280px;
+}
+
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+.ui-loader {
+    font-size: 1.3em;
+    padding-top: 0;
+    padding-left: 0;
+    margin-top: 12px;
+    line-height: 1.4285;
+    margin-right: -6px;
+    display: inline-block;
+    color: #efefef;
+    float: right;
+}
+
+#collapsedLoader {
+    visibility: hidden;
+}
+
+#expandedLoader {
+    visibility: hidden;
+    display: inline-block;
+}
+@media print {
+    .noPrint {
+        display:none;
+    }
+}
+
+@media (max-width: 768px) {
+    #loaderWrapper {
+        position: absolute !important;
+        top: 0;
+        margin-top: -20px;
+        display: block !important;
+        right: 75px;
+    }
+
+    #collapsedLoader {
+        display: inline-block;
+        margin-right: 10px;
+        visibility: visible;
+    }
+
+    #expandedLoader {
+        display: none;
+        visibility: hidden;
+    }
+}
+
+@media (min-width: 769px) {
+    #collapsedLoader {
+        display: none;
+        visibility: hidden;
+    }
+
+    #expandedLoader {
+        display: inline-block;
+        visibility: hidden;
+    }
+}
+
+@media print {
+
+    @page {
+        size:letter;
+        margin: 0;
+    }
+
+    html, body {
+        width: 1024px;
+    }
+
+    body {
+        margin: 0 auto;
+    }
 }

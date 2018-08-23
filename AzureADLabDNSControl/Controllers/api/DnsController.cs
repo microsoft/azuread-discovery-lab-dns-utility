@@ -1,4 +1,5 @@
-﻿using Infra;
+﻿using AzureADLabDNSControl.Models;
+using Infra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Web.Http;
 
 namespace AzureADLabDNSControl.Controllers.api
 {
+    [Authorize]
     public class DnsController : ApiController
     {
         public async Task UpdateTxtRecord(DnsDTO data)
@@ -20,9 +22,5 @@ namespace AzureADLabDNSControl.Controllers.api
         }
     }
 
-    public class DnsDTO
-    {
-        public string TxtRecord { get; set; }
-        public string DomainName { get; set; }
-    }
+
 }

@@ -1,13 +1,192 @@
-﻿@using Infra;
-
-@{
-    ViewBag.Title = "Index";
+﻿@{
+    ViewBag.Title = "Lab Admin";
 }
 
-<h2>Index</h2>
+<div class="panel panel-primary" style="margin-top:10px;position:relative;">
+    <div class="panel-heading">
+        <button id="btnAdd" type="button" class="btn btn-xs btn-default control pull-right"><span class="glyphicon glyphicon-plus"></span> New...</button>
+        @ViewBag.Title
+    </div>
+    <div class="panel-body">
+        <div class="col-sm-3">
+            <div class="scrollWrap">
+                <ul id="labList" class="nav nav-pills nav-stacked"></ul>
+            </div>
+        </div>
+        <div id="labDetailsInfo" class="col-sm-9">
+            Select a lab from the left to view details.
+        </div>
+        <div id="labDetails" class="col-sm-9" style="display:none">
+            <div class="col-sm-3 lbl">Instructor</div>
+            <div class="col-sm-7" id="labInstructor"></div>
+            <div class="col-sm-2">
+                <button id="btnReport" class="btn btn-primary"><span class="glyphicon glyphicon-blackboard"></span> Print Report...</button>
+            </div>
 
-Domain List:<br />
-@foreach(var item in Settings.DomainList)
-{
-    <div>@item</div>
+            <div class="col-sm-3 lbl">Date</div>
+            <div class="col-sm-7" id="labLabDate"></div>
+
+            <div class="col-sm-3 lbl">City</div>
+            <div class="col-sm-7" id="labCity"></div>
+
+            <div class="col-sm-3 lbl">Lab Code</div>
+            <div class="col-sm-7" id="labLabCode"></div>
+
+            <div class="col-sm-12">
+                <label>Team List</label>
+                <div id="tableScroll">
+                    <table class="table table-bordered table-striped table-responsive" id="labTeamList">
+                        <tr>
+                            <td>Domain</td>
+                            <td>Team Auth</td>
+                            <td>TXT Record</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" id="NewLab">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">Add New Lab</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label for="LabDate">Lab Date</label>
+                    <div class="input-group date" id="datepickerLab">
+                        <input type="text" class="form-control max" style="display:inline-block" id="LabDate" />
+                        <span class="input-group-addon">
+                            <span class="glyphicon-calendar glyphicon"></span>
+                        </span>
+                    </div>
+                    <label for="LabDate">City</label>
+                    <input type="text" class="form-control max" style="display:inline-block" id="City" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="addLab">Add Lab</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var labsList = [];
+        $(function () {
+            $("#btnReport").on("click", function () {
+                var date = $("#labDetailsInfo").data("data").Lab.labDate;
+                date = date.split("T")[0];
+                location.href = "/Admin/LabReport/" + date;
+            });
+            $("#labList").on("click", "li:not(.info)", function () {
+                var id = $(this).data("id");
+                var item = $.grep(labsList, function (o, i) {
+                    return (o.Lab.RowKey == id);
+                });
+
+                $("#labDetails").css("display", "block");
+                $("#labDetailsInfo").data("data", item[0]).css("display", "none");
+
+                showDetail(item[0]);
+            });
+            function showDetail(data) {
+                $("#labInstructor").html(data.Lab.PartitionKey);
+                $("#labLabDate").html(SiteUtil.GetShortDate(data.Lab.labDate));
+                $("#labCity").html(data.Lab.city);
+                $("#labLabCode").html(data.Lab.labCode);
+                $("#labTeamList tr:not(:first-child)").remove();
+
+                for (var x = 0; x < data.Assignments.length; x++) {
+                    var tr = $("<tr/>");
+                    $("<td/>").html(data.Assignments[x].domainName).appendTo(tr);
+                    $("<td/>").html(data.Assignments[x].RowKey).appendTo(tr);
+                    $("<td/>").html(data.Assignments[x].dnsTxtRecord).appendTo(tr);
+                    tr.appendTo("#labTeamList");
+                }
+            }
+
+            $("#btnAdd").on("click", function () {
+                loadAddForm();
+            });
+            $("#addLab").on("click", function () {
+                var data = {
+                    "LabDate": $("#LabDate").val(),
+                    "City": $("#City").val()
+                }
+                SiteUtil.AjaxCall("/api/Lab/AddLab", data, function (res) {
+                    $("#NewLab").modal('hide');
+                    loadLabList(res);
+                }, "POST");
+            });
+            function getLabList() {
+                SiteUtil.AjaxCall("/api/Lab/GetLabs", null, function (res) {
+                    labsList = res;
+                    loadLabList(res);
+                });
+            }
+            function loadLabList(res) {
+                $("#labList li").remove();
+                if (res.length == 0) {
+                    $("<li/>").addClass("info").prop("role","presentation").html("No labs currently assigned").appendTo("#labList");
+                    return;
+                }
+                for (var x = 0; x < res.length; x++) {
+                    $("<li/>").data("id", res[x].Lab.RowKey).prop("role", "presentation").html(SiteUtil.GetShortDate(res[x].Lab.labDate) + ": " + res[x].Lab.city).appendTo("#labList");
+                }
+            }
+            function loadAddForm() {
+                $("#LabDate").val("");
+                $("#City").val("");
+                $("#NewLab").modal('show');
+            }
+            $('#datepickerLab').datetimepicker({
+                format: 'MM/DD/YYYY',
+                useCurrent: true,
+                sideBySide: false,
+            });
+
+            //init
+            getLabList();
+        });
+    </script>
+
+}
+
+@section styles {
+    <style type="text/css">
+        div.panel-body {
+            max-height:600px;
+        }
+        #labTeamList tr:first-child td {
+            font-weight:bold;
+            background-color:#cacaca;
+        }
+        #labList li:not(.info) {
+            cursor:pointer;
+        }
+        .btn {
+            min-width: 80px;
+        }
+        div.scrollWrap {
+            min-height:300px;
+            max-height:550px;
+            overflow:auto;
+        }
+        #tableScroll {
+            min-height: 300px;
+            max-height: 400px;
+            width: 100%;
+            overflow: auto;
+        }
+        div.lbl {
+            font-weight:bold;
+        }
+   </style>
 }

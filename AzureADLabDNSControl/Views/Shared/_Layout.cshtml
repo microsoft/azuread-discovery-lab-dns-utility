@@ -3,21 +3,24 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Azure AD Lab Utility</title>
+    <title>@ViewBag.Title - Discover Azure AD Lab Utility</title>
+    <link rel="shortcut icon" href="/favicon2.ico" type="image/x-icon">
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
-
+    @RenderSection("styles", required: false)
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-inverse navbar-fixed-top noPrint">
         <div class="container">
             <div class="navbar-header">
+                <img style="display:inline; float:left; margin: 12.5px 15px 0 15px;" src="~/Content/Images/MicrosoftLogo.png">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Azure AD Lab", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                <span id="collapsedLoader" class="ui-loader glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                @Html.ActionLink("Discover Azure AD", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -30,9 +33,9 @@
     </div>
     <div class="container body-content">
         @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - Azure Active Directory Lab Utility</p>
+        <hr class="noPrint" />
+        <footer class="noPrint">
+            <p>&copy; @DateTime.Now.Year - Discover Azure AD Lab Utility</p>
         </footer>
     </div>
 

@@ -1,4 +1,5 @@
-﻿using Infra;
+﻿using AzureADLabDNSControl.Models;
+using Infra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,18 @@ namespace AzureADLabDNSControl.Controllers
         public async Task<ActionResult> Index(TeamAuthentication auth)
         {
             var data = await TableStorage.GetDomAssignment(auth.LabCode, auth.TeamAuth);
+            if (data == null)
+            {
+                ViewBag.ErrorHeader = "Invalid Codes";
+                ViewBag.Error = "Sorry, your codes don't match - please confirm and try again.";
+                return View("Index");
+            }
+            if (data.DnsTxtRecord != null)
+            {
+                ViewBag.ErrorHeader = "Configuration Completed";
+                ViewBag.Error = "You have already configured your custom domain. Please ask your instructor to reset if you need to update the information.";
+                return View("Index");
+            }
             return View("TeamLogin", data);
         }
 
@@ -34,10 +47,5 @@ namespace AzureADLabDNSControl.Controllers
 
             return View();
         }
-    }
-    public class TeamAuthentication
-    {
-        public string LabCode { get; set; }
-        public string TeamAuth { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
@@ -23,12 +24,15 @@ namespace AzureADLabDNSControl.Models
         }
 
         [JsonProperty("createDate")]
+        [Display(Name = "Create Date")]
         public DateTime CreateDate { get; set; }
 
         [JsonProperty("dnsTxtRecord")]
+        [Display(Name = "DNS TXT Record")]
         public string DnsTxtRecord { get; set; }
 
         [JsonProperty("domainName")]
+        [Display(Name = "Domain Name")]
         public string DomainName { get; set; }
     }
 }

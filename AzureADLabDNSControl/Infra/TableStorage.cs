@@ -13,7 +13,12 @@ namespace Infra
     {
         public static string StorageConnectionString { get; set; }
 
-        public static async Task<LabSettings> AddNewLab(string[] domains, string city, string instructor, DateTime labDate)
+        public static async Task<IEnumerable<LabDTO>> AddNewLab(LabSettings lab, string[] domains)
+        {
+            return await AddNewLab(domains, lab.City, lab.PartitionKey, lab.LabDate);
+        }
+
+        public static async Task<IEnumerable<LabDTO>> AddNewLab(string[] domains, string city, string instructor, DateTime labDate)
         {
             try
             {
@@ -32,7 +37,7 @@ namespace Infra
                     await SetDomAssignmentAsync(newLab.LabCode, dom, auth, null);
                 }
 
-                return newLab;
+                return await GetLabs(instructor);
 
             }
             catch (Exception)
@@ -53,6 +58,37 @@ namespace Infra
             res.Assignments = await GetDomAssignments(res.Lab.LabCode);
             return res;
         }
+
+
+        public static async Task<IEnumerable<LabDTO>> GetLabs(string instructor)
+        {
+            var res = new List<LabDTO>();
+            CloudTable table = await CreateTableAsync("labsettings");
+
+            TableQuery<LabSettings> partitionScanQuery = new TableQuery<LabSettings>()
+                .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, instructor));
+
+            TableContinuationToken token = null;
+
+            // Page through the results
+            do
+            {
+                TableQuerySegment<LabSettings> segment = await table.ExecuteQuerySegmentedAsync(partitionScanQuery, token);
+                token = segment.ContinuationToken;
+                foreach (LabSettings entity in segment)
+                {
+                    res.Add(new LabDTO
+                    {
+                        Lab = entity,
+                        Assignments = await GetDomAssignments(entity.LabCode)
+                    });
+                }
+            }
+
+            while (token != null);
+            return res.ToList();
+        }
+
 
         public static async Task<DomAssignment> GetDomAssignment(string labCode, string teamAuth)
         {
@@ -131,9 +167,5 @@ namespace Infra
         }
     }
 
-    public class LabDTO
-    {
-        public LabSettings Lab { get; set; }
-        public IEnumerable<DomAssignment> Assignments { get; set; }
-    }
+   
 }
