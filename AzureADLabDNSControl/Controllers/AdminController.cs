@@ -18,10 +18,9 @@ namespace AzureADLabDNSControl.Controllers
             return View();
         }
 
-        [Route("Admin/LabReport/{labDate}")]
-        public async Task<ActionResult> LabReport(string labDate)
+        public async Task<ActionResult> LabReport(string id)
         {
-            var lab = await TableStorage.GetLab(User.Identity.Name, DateTime.Parse(labDate));
+            var lab = await LabRepo.GetLab(id);
             return View(lab);
         }
     }

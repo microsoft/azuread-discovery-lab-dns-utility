@@ -1,5 +1,5 @@
 ﻿@using AzureADLabDNSControl.Models
-@model LabDTO
+@model LabSettings
 @{
     ViewBag.Title = "LabReport";
     var i = 0;
@@ -9,23 +9,23 @@
 
 <div class="row">
     <div class="col-sm-3">City</div>
-    <div class="col-sm-9">@Model.Lab.City</div>
+    <div class="col-sm-9">@Model.City</div>
 </div>
 <div class="row">
     <div class="col-sm-3">Date</div>
-    <div class="col-sm-9">@Model.Lab.LabDate.ToShortDateString()</div>
+    <div class="col-sm-9">@Model.LabDate.ToShortDateString()</div>
 </div>
 <div class="row">
     <div class="col-sm-3">Instructor</div>
-    <div class="col-sm-9">@Model.Lab.PartitionKey</div>
+    <div class="col-sm-9">@Model.PrimaryInstructor</div>
 </div>
 <div class="row">
     <div class="col-sm-3">Lab Code</div>
-    <div class="col-sm-9 code">@Model.Lab.LabCode</div>
+    <div class="col-sm-9 code">@Model.LabCode</div>
 </div>
 <hr class="noPrint" />
 <footer></footer>
-@foreach (var team in Model.Assignments)
+@foreach (var team in Model.DomAssignments)
 {
     i++;
     <div class="row">
@@ -35,10 +35,10 @@
 
     <div class="row">
         <div class="col-sm-3">Team Auth Key</div>
-        <div class="col-sm-9 code">@team.RowKey</div>
+        <div class="col-sm-9 code">@team.TeamAuth</div>
     </div>
 
-    <div class="row" style="margin-bottom:70px;">
+    <div class="row" style="margin-bottom:80px;">
         <div class="col-sm-12">
             <hr />
             <p>Instructions:</p>
@@ -50,7 +50,7 @@
             </ol>
         </div>
     </div>
-    if (i == 5)
+    if (i == 4)
     {
         i = 0;
         <footer></footer>
@@ -62,7 +62,7 @@
         $(function () {
             window.print();
             setTimeout(function () {
-                //location.href = "/Admin";
+                location.href = "/Admin";
             }, 100);
         });
     </script>

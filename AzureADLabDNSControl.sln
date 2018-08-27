@@ -5,6 +5,12 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureADLabDNSControl", "AzureADLabDNSControl\AzureADLabDNSControl.csproj", "{6FA5B813-80F2-4D37-9489-81DF525EABEB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{59C5B575-5C56-4693-A636-B9F80B60F2BB}"
+	ProjectSection(SolutionItems) = preProject
+		azuredeploy.json = azuredeploy.json
+		azuredeploy.parameters.json = azuredeploy.parameters.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

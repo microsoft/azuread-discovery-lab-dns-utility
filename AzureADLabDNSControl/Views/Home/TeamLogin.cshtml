@@ -1,14 +1,87 @@
-﻿@model AzureADLabDNSControl.Models.DomAssignment
+﻿@model AzureADLabDNSControl.Models.DnsDTO
 @{
     ViewBag.Title = "Manage Custom DNS";
+    var RO = (Model.TxtRecord != null) ? "readonly" : "";
+    var style = (Model.TxtRecord != null) ? "style='background-color:#efefef;'" : "";
+    var disabled = (Model.TxtRecord != null) ? "disabled" : "";
 }
 
+<div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
 
-<h2>TeamLogin</h2>
+        <div class="panel panel-primary" style="margin-top:10px;position:relative;">
+            <div class="panel-heading">
+                @ViewBag.Title
+            </div>
+            <div class="panel-body">
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <strong>@ViewBag.ErrorHeader</strong>
+                        <div>@ViewBag.Error</div>
+                    </div>
+                }
 
-<div class="col-md-6">
-    Your custom assigned domain is
-    <div>@Model.DomainName</div>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#update" aria-controls="update" role="tab" data-toggle="tab">Update</a></li>
+                    <li role="presentation"><a href="#help" aria-controls="help" role="tab" data-toggle="tab">Help</a></li>
+                </ul>
 
+                <!-- Tab panes -->
+                <div class="tab-content" style="padding:10px;">
+                    <div role="tabpanel" class="tab-pane active" id="update">
+                        Your team's custom domain:
+                        <div style="font-weight:bold;margin-bottom:10px;font-size:1.3em;">@Model.DomainName</div>
+                        <p>In the Azure portal, you are adding this domain as a "validated domain" in your new Azure tenant. This will allow you to synchronize your 
+                        Active Directory users to the tenant using Azure AD Connect. </p>
 
+                        <p>Click "Help" above for details on the process.</p>
+
+                        <section>
+                            @using (Html.BeginForm("UpdateAssignment", "Home", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("DomainName", Model.DomainName)
+                                @Html.Hidden("LabId", Model.LabId)
+                                <div class="form-group">
+                                    <label for="TxtRecord" class="col-md-3 control-label">DNS TXT Record</label>
+                                    <div class="col-md-7">
+                                        <input type="text" @style class="form-control" @RO value="@Model.TxtRecord" name="TxtRecord" id="TxtRecord" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-4 col-md-offset-8">
+                                        <input type="submit" value="Update DNS Validation" @disabled class="btn btn-primary pull-right @disabled" />
+                                    </div>
+                                </div>
+                            }
+                        </section>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane" id="help">
+                        This lab tool allows you to register a temporary custom, public-facing domain with your new tenant.
+                        Your team was assigned "@Model.DomainName" as your temporary domain - you'll need to access the Azure portal
+                        at <a target="_blank" href="https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Domains">https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Domains</a>
+                        to begin the process.
+                        <ol>
+                            <li>
+                                That link should have brought you to this panel in the portal:<br />
+                                <img style="width:600px;" src="~/Content/Help/Step1.png" />
+                            </li>
+                            <li>
+                                Click to add a new domain:<br />
+                                <img style="width:500px;" src="~/Content/Help/Step2.png" />
+                            </li>
+                            <li>
+                                Copy the TXT record, paste it into the form here, and update.<br />
+                                <img style="width:600px;" src="~/Content/Help/Step3.png" />
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+

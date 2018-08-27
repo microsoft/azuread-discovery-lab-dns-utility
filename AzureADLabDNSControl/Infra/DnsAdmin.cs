@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using AzureADLabDNSControl;
 using Infra;
-using Microsoft.Azure.Management.Dns.Fluent;
-using Microsoft.Azure.Management.Dns.Fluent.Models;
+using Microsoft.Azure.Management.Dns;
+using Microsoft.Azure.Management.Dns.Models;
+//using Microsoft.Azure.Management.Dns.Fluent;
+//using Microsoft.Azure.Management.Dns.Fluent.Models;
 using Microsoft.Rest.Azure.Authentication;
+using Newtonsoft.Json;
 
 namespace Infra
 {
@@ -31,10 +37,10 @@ namespace Infra
             {
                 SubscriptionId = Settings.AzureSubscriptionId
             };
-            
+
         }
 
-        public async Task<IEnumerable<ZoneInner>> GetZoneList()
+        public async Task<IEnumerable<Zone>> GetZoneList()
         {
             var res = await _client.Zones.ListByResourceGroupAsync(Settings.DnsZoneRG);
             return res.ToList();
@@ -64,15 +70,26 @@ namespace Infra
             }
         }
 
+        public async Task ClearTxtRecord(string zoneName)
+        {
+            await _client.RecordSets.DeleteAsync(Settings.DnsZoneRG, zoneName, "@", RecordType.TXT);
+        }
+
         public async Task SetTxtRecord(string record, string zoneName)
         {
             try
             {
-                RecordSetInner parms = new RecordSetInner();
-                TxtRecord txt = new TxtRecord();
+                var recordSetParams = new RecordSet();
+                recordSetParams.TTL = 3600;
+
+                recordSetParams.TxtRecords = new List<TxtRecord>();
+                var txt = new TxtRecord();
+                txt.Value = new List<string>();
                 txt.Value.Add(record);
-                parms.TxtRecords.Add(txt);
-                var res = await _client.RecordSets.CreateOrUpdateAsync(Settings.DnsZoneRG, zoneName, "@", RecordType.TXT, parms);
+                recordSetParams.TxtRecords.Add(txt);
+
+                // Create the actual record set in Azure DNS
+                var recordSet = await _client.RecordSets.CreateOrUpdateAsync(Settings.DnsZoneRG, zoneName, "@", RecordType.TXT, recordSetParams);
             }
             catch (Exception)
             {
@@ -84,6 +101,36 @@ namespace Infra
         public void Dispose()
         {
             _client.Dispose();
+        }
+    }
+    public class TxtRecs
+    {
+        [JsonProperty(PropertyName = "value")]
+        public List<string> Value { get; set; }
+        public TxtRecs(string value)
+        {
+            Value = new List<string>();
+            Value.Add(value);
+        }
+    }
+
+    public class DNSProps
+    {
+        public int TTL { get; set; }
+        public List<TxtRecs> TxtRecords {get; set;}
+        public DNSProps()
+        {
+            TxtRecords = new List<TxtRecs>();
+        }
+    }
+
+    public class DNSBody
+    {
+        [JsonProperty(PropertyName = "properties")]
+        public DNSProps Properties { get; set; }
+        public DNSBody()
+        {
+            Properties = new DNSProps();
         }
     }
 }

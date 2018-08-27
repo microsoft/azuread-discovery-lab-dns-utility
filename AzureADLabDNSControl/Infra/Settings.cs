@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocDBLib;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -18,7 +19,16 @@ namespace Infra
         {
             AzureSubscriptionId = appSettings["AzureSubscriptionId"];
             DnsZoneRG = appSettings["DnsZoneRGName"];
-            TableStorage.StorageConnectionString = appSettings["StorageConnectionString"];
+
+            //DocDB config
+            DocDBRepo.Settings.DocDBUri = appSettings["DocDBUri"];
+            DocDBRepo.Settings.DocDBAuthKey = appSettings["DocDBAuthKey"];
+            DocDBRepo.Settings.DocDBName = appSettings["DocDBName"];
+            DocDBRepo.Settings.DocDBCollection = appSettings["DocDBCollection"];
+
+            var client = DocDBRepo.Initialize().Result;
+            var s = client.AuthKey;
+
             DomainList = new List<string>();
             using (var dns = new DnsAdmin())
             {

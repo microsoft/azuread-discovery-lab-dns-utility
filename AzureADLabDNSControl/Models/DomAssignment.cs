@@ -1,5 +1,5 @@
 ﻿using Infra;
-using Microsoft.WindowsAzure.Storage.Table;
+using DocDBLib;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,30 +9,25 @@ using System.Web;
 
 namespace AzureADLabDNSControl.Models
 {
-    public class DomAssignment: TableEntity
+    public class DomAssignment
     {
-        public DomAssignment()
-        {
-
-        }
-        public DomAssignment(string labCode, string TeamAuth, string domainName)
-        {
-            PartitionKey = labCode;
-            RowKey = TeamAuth;
-            CreateDate = DateTime.UtcNow;
-            DomainName = domainName;
-        }
-
-        [JsonProperty("createDate")]
-        [Display(Name = "Create Date")]
-        public DateTime CreateDate { get; set; }
-
-        [JsonProperty("dnsTxtRecord")]
         [Display(Name = "DNS TXT Record")]
+        [JsonProperty(PropertyName = "dnsTxtRecord")]
         public string DnsTxtRecord { get; set; }
 
-        [JsonProperty("domainName")]
         [Display(Name = "Domain Name")]
+        [JsonProperty(PropertyName = "domainName")]
         public string DomainName { get; set; }
+
+        [JsonProperty(PropertyName = "sessionId")]
+        public string SessionID { get; set; }
+
+        [JsonProperty(PropertyName = "teamAuth")]
+        public string TeamAuth { get; set; }
+
+        public static string GenAuthCode()
+        {
+            return string.Format("Team-{0}", Util.CreatePassword(5));
+        }
     }
 }

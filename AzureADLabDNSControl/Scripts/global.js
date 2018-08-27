@@ -223,6 +223,10 @@ var SiteUtil = function () {
         return SiteUtil.UtcToLocal(moment(sDate), null, sFormat, false)
     }
 
+    function _getRowKey(labDate) {
+        return moment.utc(labDate).format("YYYY-MM-DD");
+    }
+
     function _utcToServerAndLocal(sDate, sInputFormatMask) {
         var bIsUTC = (typeof sDate == "string" && sDate.indexOf("T") == 10);
         sInputFormatMask = (bIsUTC) ? null : (sInputFormatMask || 'MM/DD/YYYY HH:mm A');
@@ -421,6 +425,7 @@ var SiteUtil = function () {
         UtcToLocal: _utcToLocal,
         UtcToServerAndLocal: _utcToServerAndLocal,
         GetShortDate: _getShortDate,
+        GetRowKey: _getRowKey,
         GetFormObjects: getFormObjects,
         GetDataObject: getDataObject2,
         IsValidEmailAddress: isValidEmailAddress,

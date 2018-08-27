@@ -1,0 +1,204 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "hostingPlanName": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Azure App Services use \"Hosting Plans\" to define the compute resources that will run your app. The name of this plan will also be used elsewhere throughout this deployment, as part of your database host name and your default web site name"
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "F1",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "metadata": {
+        "description": "Describes plan's pricing tier and capacity - this can be changed after deployment. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      }
+    },
+    "skuCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Describes plan's instance count (how many distinct web servers will be deployed in the farm) - this can be changed after deployment"
+      }
+    },
+    "tenantDomainName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required: the name of the Azure Active Directory tenant that will host your auth apps (like contoso.com, or contoso.onmicrosoft.com)"
+      }
+    },
+    "tenantId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required: the GUID of the tenant above"
+      }
+    },
+    "clientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required: the application ID GUID of your administrative auth app (see Readme for details)"
+      }
+    },
+    "clientSecret": {
+      "type": "string",
+      "metadata": {
+        "description": "Required: the application secret for your administrative auth app"
+      }
+    },
+    "repoURL": {
+      "type": "string",
+      "defaultValue": "https://github.com/Microsoft/aad-hybrid-lab.git",
+      "metadata": {
+        "description": "The path to the application source files on GitHub"
+      }
+    },
+    "branch": {
+      "type": "string",
+      "defaultValue": "master",
+      "metadata": {
+        "description": "The main branch of the application repo"
+      }
+    }
+  },
+  "variables": {
+    "webSiteName": "[concat(tolower(parameters('hostingPlanName')), '-web', uniqueString(resourceGroup().id))]",
+    "docDbHost": "[concat(tolower(parameters('hostingPlanName')), '-db', uniqueString(resourceGroup().id))]",
+    "docDbName": "Lab",
+    "docDbCollection": "LabItems"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "kind": "GlobalDocumentDB",
+      "name": "[variables('docDbHost')]",
+      "apiVersion": "2015-04-08",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "CosmosDB"
+      },
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session",
+          "maxIntervalInSeconds": 5,
+          "maxStalenessPrefix": 100
+        },
+        "name": "[variables('docDbHost')]"
+      },
+      "dependsOn": []
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('hostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "HostingPlan"
+      },
+      "sku": {
+        "name": "[parameters('skuName')]",
+        "capacity": "[parameters('skuCapacity')]"
+      },
+      "properties": {
+        "name": "[parameters('hostingPlanName')]"
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[variables('webSiteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "Resource",
+        "displayName": "Website"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+        "[variables('docDbHost')]"
+      ],
+      "properties": {
+        "name": "[variables('webSiteName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
+        "siteConfig": {
+          "phpVersion": "",
+          "appSettings": [
+            {
+              "Name": "ida:ClientId",
+              "Value": "[parameters('clientId')]"
+            },
+            {
+              "Name": "ida:ClientSecret",
+              "Value": "[parameters('clientSecret')]"
+            },
+            {
+              "Name": "ida:Tenant",
+              "Value": "[parameters('tenantDomainName')]"
+            },
+            {
+              "Name": "ida:TenantId",
+              "Value": "[parameters('tenantId')]"
+            },
+            {
+              "Name": "DocDBUri",
+              "Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', variables('docDbHost'))).documentEndpoint]"
+            },
+            {
+              "Name": "DocDBAuthKey",
+              "Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('docDbHost')), '2015-04-08').primaryMasterKey]"
+            },
+            {
+              "Name": "DocDBName",
+              "Value": "[variables('docDbName')]"
+            },
+            {
+              "Name": "DocDBCollection",
+              "Value": "[variables('docDbCollection')]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "name": "web",
+          "type": "sourcecontrols",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('webSiteName'))]"
+          ],
+          "tags": {
+            "displayName": "CodeDeploy"
+          },
+          "properties": {
+            "RepoUrl": "[parameters('repoUrl')]",
+            "branch": "[parameters('branch')]",
+            "IsManualIntegration": true
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "WebSiteObject": {
+      "value": "[reference(resourceId('Microsoft.Web/sites/', variables('webSiteName')), '2015-08-01')]",
+      "type": "object"
+    }
+  }
+}

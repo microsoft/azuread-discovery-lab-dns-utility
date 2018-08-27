@@ -15,6 +15,18 @@ namespace AzureADLabDNSControl
             config.MapHttpAttributeRoutes();
 
             config.Routes.MapHttpRoute(
+               name: "ActionAndIdApi",
+               routeTemplate: "api/{controller}/{action}/{id}",
+               defaults: new { id = RouteParameter.Optional }
+            );
+
+            config.Routes.MapHttpRoute(
+               name: "ActionOnlyApi",
+               routeTemplate: "api/{controller}/{action}",
+               defaults: new { id = RouteParameter.Optional }
+            );
+
+            config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
