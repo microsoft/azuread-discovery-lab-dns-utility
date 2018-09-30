@@ -10,7 +10,7 @@ using System.Web.Http;
 
 namespace AzureADLabDNSControl.Controllers.api
 {
-    [Authorize]
+    [Authorize(Roles = CustomRoles.LabAdmin)]
     public class DnsController : ApiController
     {
         public async Task UpdateTxtRecord(DnsDTO data)

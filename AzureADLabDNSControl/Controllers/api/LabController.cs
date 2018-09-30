@@ -1,4 +1,5 @@
-﻿using AzureADLabDNSControl.Models;
+﻿using AzureADLabDNSControl.Infra;
+using AzureADLabDNSControl.Models;
 using Infra;
 using System;
 using System.Collections.Generic;
@@ -6,11 +7,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 
 namespace AzureADLabDNSControl.Controllers.api
 {
-    [Authorize]
+    [Authorize(Roles = CustomRoles.LabAdmin)]
     public class LabController : ApiController
     {
         [HttpPost]
@@ -56,13 +58,35 @@ namespace AzureADLabDNSControl.Controllers.api
             var res = await LabRepo.ResetLabCode(lab);
             return res;
         }
+
+        [HttpPost]
+        public async Task UnlinkAllDomains()
+        {
+
+        }
+        
+        [HttpPost]
+        public async Task UnlinkDomain(string domainName)
+        {
+
+        }
+
         [HttpPost]
         public async Task<LabSettings> ResetAssignment(TeamDTO team)
         {
+            //detach domain from tenant
+            var tenantId = User.Identity.GetClaim(CustomClaimTypes.TenantId);
+
+            var control = await AADLinkControl.CreateAsync(tenantId, new HttpContextWrapper(HttpContext.Current));
+            var adalResponse = await control.DeleteDomain(tenantId, team.TeamAssignment.DomainName);
+            
+            //remove zone record from zone
             using (var dns = new DnsAdmin())
             {
                 await dns.ClearTxtRecord(team.TeamAssignment.DomainName);
             }
+
+            //update record in Cosmos
             var res = await LabRepo.ResetAssignment(team);
             return res;
         }

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Infra
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -26,6 +27,14 @@
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     <li>@Html.ActionLink("About", "About", "Home")</li>
+                    @if (User.IsInRole(CustomRoles.LabAdmin))
+                    {
+                        <li>@Html.ActionLink("Admin", "Index", "Admin")</li>
+                    }
+                    @if (User.IsInRole(CustomRoles.LabUser))
+                    {
+                        <li>@Html.ActionLink("Team", "Index", "Team")</li>
+                    }
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
@@ -33,8 +42,6 @@
     </div>
     <div class="container body-content">
         @RenderBody()
-
-        <hr class="noPrint" />
 
         <footer class="bg-4 noPrint">
             <div class="container">

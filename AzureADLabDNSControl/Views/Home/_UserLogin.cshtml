@@ -1,0 +1,14 @@
+﻿<p>
+    This is a lab utility to assist with configuration of your team's lab today. Please sign in using your new tenant administrator account.
+</p>
+<p>
+    IMPORTANT: the first time you sign in, you will need to "consent" to the application, which will install and enable it in your tenant.
+    This will allow you to authenticate to the utility, and will allow the instructor to assist with other aspects of the lab today.
+</p>
+<p class="alert alert-danger">
+    <u><b>DO NOT LOGIN OR CONSENT</b></u> to this application
+    using your work login or any other login account other than the one you created when you created your tenant.
+</p>
+<p style="text-align:center;">
+    @Html.ActionLink("Sign in", "SignIn", "Account", routeValues: null, htmlAttributes: new { id = "loginLink", @class = "btn btn-primary" })
+</p>

@@ -1,8 +1,10 @@
 ﻿@using AzureADLabDNSControl.Models
 @model LabSettings
 @{
-    ViewBag.Title = "LabReport";
-    var i = 0;
+                /**/
+
+                ViewBag.Title = "LabReport";
+                var i = 0;
 }
 
 <h2>Lab Report</h2>
@@ -23,8 +25,9 @@
     <div class="col-sm-3">Lab Code</div>
     <div class="col-sm-9 code">@Model.LabCode</div>
 </div>
-<hr class="noPrint" />
-<footer></footer>
+<hr />
+On each of the following pages, please cut between each "Domain" section and hand out the slips to each lab team. 
+<div class="pageBreak">&nbsp;</div>
 @foreach (var team in Model.DomAssignments)
 {
     i++;
@@ -38,51 +41,64 @@
         <div class="col-sm-9 code">@team.TeamAuth</div>
     </div>
 
-    <div class="row" style="margin-bottom:80px;">
+    <div class="row instructions">
         <div class="col-sm-12">
             <hr />
             <p>Instructions:</p>
             <ol>
-                <li>Navigate to https://discoverazuread.azurewebsites.net/ </li>
+                <li>Navigate to <u>https://discoverazuread.azurewebsites.net/</u> </li>
                 <li>Enter your Lab Code (from the instructor), and your Team Auth Key</li>
                 <li>Click to view your team domain update tool</li>
                 <li>Continue with the instructor</li>
             </ol>
         </div>
     </div>
-    if (i == 4)
+    if (i == 5)
     {
         i = 0;
-        <footer></footer>
+        <div class="pageBreak">&nbsp;</div>
     }
 }
 
 @section scripts {
-    <script type="text/javascript">
-        $(function () {
-            window.print();
-            setTimeout(function () {
-                location.href = "/Admin";
-            }, 100);
-        });
-    </script>
+    @if (Request.QueryString["raw"] != "1")
+    {
+        <script type="text/javascript">
+            $(function () {
+
+                window.print();
+                setTimeout(function () {
+                    location.href = "/Admin";
+                }, 100);
+            });
+        </script>
+    }
 }
+
 @section styles {
     <style type="text/css">
-        footer {
-            page-break-after: always;
+        @@media print {
+            div.pageBreak {
+                page-break-after: always;
+                break-after: always;
+            }
+        }
+        div.instructions {
+            margin-bottom:75px;
         }
         .code {
             font-family: Courier New, Courier, Consolas, monospace;
-            font-weight:bold;
+            font-weight: bold;
             letter-spacing: 6px;
         }
+
         div.col-sm-3 {
-            font-weight:bold;
-            font-size:1.4em;
+            font-weight: bold;
+            font-size: 1.4em;
         }
+
         div.col-sm-9 {
-            font-size:1.4em;
+            font-size: 1.4em;
         }
     </style>
 }

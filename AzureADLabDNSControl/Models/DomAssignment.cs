@@ -19,11 +19,11 @@ namespace AzureADLabDNSControl.Models
         [JsonProperty(PropertyName = "domainName")]
         public string DomainName { get; set; }
 
-        [JsonProperty(PropertyName = "sessionId")]
-        public string SessionID { get; set; }
-
         [JsonProperty(PropertyName = "teamAuth")]
         public string TeamAuth { get; set; }
+
+        [JsonProperty(PropertyName = "assignedTenantId")]
+        public string AssignedTenantId { get; set; }
 
         public static string GenAuthCode()
         {

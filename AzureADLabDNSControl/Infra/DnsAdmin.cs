@@ -32,7 +32,7 @@ namespace Infra
         private async Task InitAsync()
         {
             // Build the service credentials and DNS management client
-            var serviceCreds = await ApplicationTokenProvider.LoginSilentAsync(Startup.tenantId, Startup.clientId, Startup.clientSecret);
+            var serviceCreds = await ApplicationTokenProvider.LoginSilentAsync(Startup.LabAdminTenantId, Startup.LabAdminClientId, Startup.LabAdminSecret);
             _client = new DnsManagementClient(serviceCreds)
             {
                 SubscriptionId = Settings.AzureSubscriptionId

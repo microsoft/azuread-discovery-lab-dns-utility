@@ -1,0 +1,70 @@
+﻿.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    color: #808080;
+}
+
+span.glyphicon {
+    cursor: pointer;
+}
+
+div.buttons button {
+    width: 130px;
+    margin-bottom: 4px;
+}
+
+div.panel-body {
+    max-height: 600px;
+}
+
+#labTeamList tr:first-child td {
+    font-weight: bold;
+    background-color: #cacaca;
+}
+
+#labList li:not(.info) {
+    cursor: pointer;
+}
+
+.btn {
+    min-width: 80px;
+}
+
+div.scrollWrap {
+    min-height: 300px;
+    max-height: 550px;
+    overflow: auto;
+}
+
+#tableScroll {
+    min-height: 300px;
+    max-height: 400px;
+    width: 100%;
+    overflow: auto;
+}
+
+div.details {
+    min-height: 500px;
+    border-left: 1px solid #dadada;
+    padding-left: 6px;
+}
+
+div.lbl {
+    font-weight: bold;
+}
+
+.tokenfield {
+    min-height: 100px;
+}
+
+ul.nav-stacked li a {
+    border: 1px solid #efefef;
+}
+
+.hint {
+    font-size: .8em;
+    font-style: italic;
+    font-weight: normal;
+}
+
+#dtPicker .btn {
+    min-width: unset !important;
+}

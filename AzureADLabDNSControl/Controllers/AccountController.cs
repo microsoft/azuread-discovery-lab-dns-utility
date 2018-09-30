@@ -6,18 +6,33 @@ using System.Web.Mvc;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Microsoft.Owin.Security;
+using Infra;
 
 namespace AzureADLabDNSControl.Controllers
 {
     public class AccountController : Controller
     {
+        public void SignInAdmin()
+        {
+            var redir = (Request.QueryString["redir"] ?? "/");
+
+            // Send an OpenID Connect sign-in request.
+            if (!Request.IsAuthenticated || Request.QueryString["force"] == "true")
+            {
+                HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties { RedirectUri = redir },
+                    CustomAuthType.LabAdmin);
+            }
+        }
+
         public void SignIn()
         {
+            var redir = (Request.QueryString["redir"] ?? "/");
+
             // Send an OpenID Connect sign-in request.
-            if (!Request.IsAuthenticated)
+            if (!Request.IsAuthenticated || Request.QueryString["force"] == "true")
             {
-                HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties { RedirectUri = "/" },
-                    OpenIdConnectAuthenticationDefaults.AuthenticationType);
+                HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties { RedirectUri = redir },
+                    CustomAuthType.LabUser);
             }
         }
 

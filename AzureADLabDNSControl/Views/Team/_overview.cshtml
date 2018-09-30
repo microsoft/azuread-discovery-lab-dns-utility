@@ -1,0 +1,54 @@
+﻿Steps:
+<ol>
+    <li>
+        Begin configuring your AD VM
+        <ul>
+            <li>Use the automated template at <a href="https://github.com/Microsoft/aad-hybrid-lab" target="_blank">https://github.com/Microsoft/aad-hybrid-lab</a></li>
+            <li>
+                You can use any domain you like for the "Ad Domain Name" - if you use the domain name from your team assignment, then your user sync will just work. If you use
+                something different, or something typical of older directories like "corp.local", then you'll have an extra step to add an alternate UPN suffix:
+                <img src="~/Content/Help/VM-ARM.png" />
+            </li>
+            <li>This deployment will take ~20 minutes, for the VM, then the AD configuration, DNS update, utility install, and test user configuration</li>
+            <li>NOTE: if you DON'T have an Azure subscription for this step, skip with the next step first and provision a trial subscription, then return to this step.</li>
+        </ul>
+    </li>
+    <li>
+        Provision your test AD tenant
+        <ul>
+            <li>
+                Without needing an Azure subscription, you can provision a tenant at <a href="https://account.azure.com/organization" target="_blank">https://account.azure.com/organization</a>.
+                You will be prompted for a unique organization name, an initial administrative user name and password, and you'll be asked to confirm a mobile number.
+            </li>
+            <li>
+                Once this is complete, you'll be asked to log in with your new username and password, and then you'll be presented with a page offering you the opportunity to start
+                an Azure trial account. If you already have an Azure subscription you'll use for the lab, you can skip this page and navigate to <a href="https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview" target="_blank">https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview</a>, then
+                click on the "Azure Active Directory" button on the left.
+                <img src="~/Content/Help/OpenAADBlade.png" />
+            </li>
+        </ul>
+    </li>
+    <li>
+        Get your custom domain validation code
+        <ul>
+            <li>Click the "Custom domain names" button</li>
+            <li>Click "Add custom domain"</li>
+            <li>Enter your team's custom domain name</li>
+            <li>Click "Add Domain"</li>
+            <li>
+                Copy the "DESTINATION OR POINTS TO ADDRESS" value (you can click the blue button and it will place
+                it on your clipboard)
+            </li>
+            <li>Paste it in the "DNS TXT Record" under the "Update" tab above, then click "Update DNS Validation"</li>
+        </ul>
+    </li>
+    <li>
+        Verify the domain in your tenant
+        <ul>
+            <li>Return to the Azure portal where you copied the DESTINATION value</li>
+            <li>Click the "Verify" button</li>
+            <li>You're now ready to run Azure AD Connect in your VM, and sync your new tenant to your "on-prem" Active Directory.</li>
+        </ul>
+    </li>
+
+</ol>

@@ -1,6 +1,6 @@
 ﻿body {
     padding-top: 50px;
-    padding-bottom: 50px;
+    padding-bottom: 70px;
 }
 
 /* Set padding to keep content from hitting the edges */
@@ -122,7 +122,7 @@ footer {
 }
 
     footer div p {
-        margin: 20px 0;
+        margin: 20px 40px;
     }
 
 .bg-4 {

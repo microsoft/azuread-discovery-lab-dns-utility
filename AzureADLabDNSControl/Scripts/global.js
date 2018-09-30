@@ -4,6 +4,8 @@
 $(function () {
     lTimezone = moment.tz.guess();
     lTimezoneAbb = moment().tz(lTimezone).zoneName();
+    //SiteUtil.Cookie.Set("tz", lTimezone);
+    //SiteUtil.Cookie.Set("tzo", new Date().getTimezoneOffset());
     $.fx.speeds._default = 200;
 });
 

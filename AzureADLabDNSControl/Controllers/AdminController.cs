@@ -9,7 +9,7 @@ using System.Web.Mvc;
 
 namespace AzureADLabDNSControl.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = CustomRoles.LabAdmin)]
     public class AdminController : Controller
     {
         // GET: Admin

@@ -10,44 +10,103 @@ using System.Web.Mvc;
 using System.Configuration;
 using System.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens;
+using Infra;
+using System.Web;
+using System.Linq;
+using System.Security.Claims;
+using AzureADLabDNSControl.Infra;
+using Graph;
 
 namespace AzureADLabDNSControl
 {
     public partial class Startup
     {
         private static string aadInstance = EnsureTrailingSlash(ConfigurationManager.AppSettings["ida:AADInstance"]);
-        public static string clientId = ConfigurationManager.AppSettings["ida:ClientId"];
-        public static string clientSecret = ConfigurationManager.AppSettings["ida:ClientSecret"];
-        public static string tenantId = ConfigurationManager.AppSettings["ida:TenantId"];
-        public static string authority = String.Format("https://login.microsoftonline.com/{0}", tenantId);
+
+        public static string LabAdminClientId = ConfigurationManager.AppSettings["ida:ClientId"];
+        public static string LabAdminSecret = ConfigurationManager.AppSettings["ida:ClientSecret"];
+        public static string LabAdminTenantId = ConfigurationManager.AppSettings["ida:TenantId"];
+        public static string Authority = "https://login.microsoftonline.com/{0}";
+        public static string adminAuthority = String.Format(Authority, LabAdminTenantId);
+
+        public static string LabUserClientId = ConfigurationManager.AppSettings["LinkAdminClientId"];
+        public static string LabUserSecret = ConfigurationManager.AppSettings["LinkAdminSecret"];
+        public static string userAuthority = String.Format(Authority, "common");
+
+        public static string GraphResource = "https://graph.microsoft.com";
 
         public void ConfigureAuth(IAppBuilder app)
         {
             app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions());
-
-            app.UseOpenIdConnectAuthentication(
-                new OpenIdConnectAuthenticationOptions
+            var authProvider = new CookieAuthenticationProvider
+            {
+                OnResponseSignIn = ctx =>
                 {
-                    ClientId = clientId,
-                    Authority = authority,
-                    PostLogoutRedirectUri = "/",
-                    Notifications = new OpenIdConnectAuthenticationNotifications
+                    var task = AuthInit(ctx);
+                    task.GetAwaiter().GetResult();
+                },
+                OnValidateIdentity = ctx =>
+                {
+                    //good spot to troubleshoot nonces, etc...
+                    return Task.FromResult(0);
+                }
+            };
+
+            var cookieOptions = new CookieAuthenticationOptions
+            {
+                Provider = authProvider,
+                CookieManager = new Microsoft.Owin.Host.SystemWeb.SystemWebChunkingCookieManager()
+            };
+
+            app.UseCookieAuthentication(cookieOptions);
+
+            OpenIdConnectAuthenticationOptions LabAdminOptions = new OpenIdConnectAuthenticationOptions
+            {
+                ClientId = LabAdminClientId,
+                Authority = adminAuthority,
+                PostLogoutRedirectUri = "/",
+                Notifications = new OpenIdConnectAuthenticationNotifications
+                {
+                    RedirectToIdentityProvider = (context) =>
                     {
-                        RedirectToIdentityProvider = (context) =>
-                        {
-                            string appBaseUrl = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase;
-                            context.ProtocolMessage.RedirectUri = appBaseUrl + "/";
-                            context.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl;
-                            return Task.FromResult(0);
-                        },
+                        string appBaseUrl = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase;
+                        context.ProtocolMessage.RedirectUri = appBaseUrl + "/";
+                        context.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl;
+                        return Task.FromResult(0);
                     },
-                    TokenValidationParameters = new TokenValidationParameters
+                },
+                TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                },
+                AuthenticationType = CustomAuthType.LabAdmin
+            };
+            app.UseOpenIdConnectAuthentication(LabAdminOptions);
+
+            OpenIdConnectAuthenticationOptions LabUserOptions = new OpenIdConnectAuthenticationOptions
+            {
+                ClientId = LabUserClientId,
+                Authority = userAuthority,
+                PostLogoutRedirectUri = "/",
+                Notifications = new OpenIdConnectAuthenticationNotifications
+                {
+                    RedirectToIdentityProvider = (context) =>
                     {
-                        ValidateIssuer = false,
-                    }
-            });
+                        string appBaseUrl = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase;
+                        context.ProtocolMessage.RedirectUri = appBaseUrl + "/";
+                        context.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl;
+                        return Task.FromResult(0);
+                    },
+                },
+                TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                },
+                AuthenticationType = CustomAuthType.LabUser
+            };
+            app.UseOpenIdConnectAuthentication(LabUserOptions);
+
         }
 
         private static string EnsureTrailingSlash(string value)

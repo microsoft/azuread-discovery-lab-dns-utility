@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -25,20 +26,22 @@ namespace Infra
             return (res.Count() == 0);
         }
 
-        public static async Task<IEnumerable<LabSettings>> GetTodaysLab()
+        public static async Task<IEnumerable<LabSettings>> GetTodaysLab(int offset)
         {
-            var res = await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.LabDate == DateTime.UtcNow);
+            var today = DateTime.UtcNow;
+            today = today.AddMinutes(offset * -1).Date;
+            var res = await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.LabDate == today);
             return res;
         }
 
         public static async Task<IEnumerable<LabSettings>> GetLabs(string instructor)
         {
             var res = await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.PrimaryInstructor == instructor || d.Instructors.Contains(instructor));
-            return res;
+            return res.OrderBy(l => l.LabDate).ToList();
         }
         public static async Task<IEnumerable<DateTime>> GetLabDates()
         {
-            var res = (await DocDBRepo.DB<LabSettings>.GetItemsAsync()).Select(l => l.LabDate).ToList();
+            var res = (await DocDBRepo.DB<LabSettings>.GetItemsAsync()).OrderBy(l => l.LabDate).Select(l => l.LabDate).ToList();
             return res;
         }
 
@@ -53,27 +56,6 @@ namespace Infra
                 Lab = res,
                 TeamAssignment = res.DomAssignments.SingleOrDefault(d => d.DomainName == item.DomainName)
             };
-        }
-
-        public static async Task<TeamDTO> GetDomAssignment(string sessionId, object labId)
-        {
-            try
-            {
-                var res = (await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.Id == labId.ToString())).SingleOrDefault();
-                if (res == null)
-                    return null;
-
-                return new TeamDTO
-                {
-                    Lab = res,
-                    TeamAssignment = res.DomAssignments.SingleOrDefault(d => d.SessionID == sessionId)
-                };
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
         }
 
         public static async Task<TeamDTO> GetDomAssignment(string labCode, string teamAuth)
@@ -122,21 +104,20 @@ namespace Infra
         public static async Task<LabSettings> ResetAssignment(TeamDTO team)
         {
             var newTeam = team.Lab.DomAssignments.Single(d => d.DomainName == team.TeamAssignment.DomainName);
-            newTeam.SessionID = null;
             newTeam.TeamAuth = DomAssignment.GenAuthCode();
             newTeam.DnsTxtRecord = null;
             var res =  await UpdateLab(team.Lab);
             return res.Single(l => l.Id == team.Lab.Id);
         }
 
-        public static async Task UpdateTeamSession(TeamDTO data, string sessionId)
+        public static async Task UpdateTenantId(TeamDTO data, string tenantId)
         {
-            await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "sessionId", sessionId);
+            await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "assignedTenantId", tenantId);
         }
 
-        public static async Task UpdateDnsRecord(TeamDTO data, string DnsTxtRecord)
+        public static async Task UpdateDnsRecord(TeamDTO data)
         {
-            var lab = await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "dnsTxtRecord", DnsTxtRecord);
+            var lab = await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "dnsTxtRecord", data.TeamAssignment.DnsTxtRecord);
         }
 
         #endregion
