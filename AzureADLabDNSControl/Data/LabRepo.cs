@@ -28,7 +28,7 @@ namespace Infra
 
         public static async Task<IEnumerable<LabSettings>> GetTodaysLab(int offset)
         {
-            var today = DateTime.UtcNow;
+            var today = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
             today = today.AddMinutes(offset * -1).Date;
             var res = await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.LabDate == today);
             return res;
@@ -45,6 +45,30 @@ namespace Infra
             return res;
         }
 
+        public static async Task<IEnumerable<string>> GetInstructors(string labId)
+        {
+            var res = (await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.Id == labId)).SingleOrDefault();
+            if (res == null)
+                return null;
+            return res.Instructors;
+        }
+        #endregion
+
+        #region Updates
+
+        public static async Task<IEnumerable<LabSettings>> UpdateLab(LabSettings lab, string instructor)
+        {
+            await DocDBRepo.DB<LabSettings>.UpdateItemAsync(lab);
+            return await GetLabs(instructor);
+        }
+
+        public static async Task<IEnumerable<LabSettings>> ResetLabCode(LabSettings lab, string instructor)
+        {
+            lab.LabCode = LabSettings.GenLabCode();
+            return await UpdateLab(lab, instructor);
+        }
+
+        //Team Operations
         public static async Task<TeamDTO> GetDomAssignment(DnsDTO item)
         {
             var res = (await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.Id == item.LabId)).SingleOrDefault();
@@ -79,42 +103,15 @@ namespace Infra
             return res.DomAssignments;
         }
 
-        public static async Task<IEnumerable<string>> GetInstructors(string labId)
+        public static async Task ResetTeamCode(TeamDTO data)
         {
-            var res = (await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.Id == labId)).SingleOrDefault();
-            if (res == null)
-                return null;
-            return res.Instructors;
+            var newCode = DomAssignment.GenAuthCode(data.TeamAssignment.TeamName);
+            await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "teamAuth", newCode);
         }
-        #endregion
-
-        #region Updates
-
-        public static async Task<IEnumerable<LabSettings>> UpdateLab(LabSettings lab)
-        {
-            await DocDBRepo.DB<LabSettings>.UpdateItemAsync(lab);
-            return await GetLabs(lab.PrimaryInstructor);
-        }
-
-        public static async Task<IEnumerable<LabSettings>> ResetLabCode(LabSettings lab)
-        {
-            lab.LabCode = LabSettings.GenLabCode();
-            return await UpdateLab(lab);
-        }
-        public static async Task<LabSettings> ResetAssignment(TeamDTO team)
-        {
-            var newTeam = team.Lab.DomAssignments.Single(d => d.DomainName == team.TeamAssignment.DomainName);
-            newTeam.TeamAuth = DomAssignment.GenAuthCode();
-            newTeam.DnsTxtRecord = null;
-            var res =  await UpdateLab(team.Lab);
-            return res.Single(l => l.Id == team.Lab.Id);
-        }
-
         public static async Task UpdateTenantId(TeamDTO data, string tenantId)
         {
             await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "assignedTenantId", tenantId);
         }
-
         public static async Task UpdateDnsRecord(TeamDTO data)
         {
             var lab = await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "dnsTxtRecord", data.TeamAssignment.DnsTxtRecord);
@@ -129,20 +126,38 @@ namespace Infra
             {
                 lab.LabCode = LabSettings.GenLabCode();
                 lab.CreateDate = DateTime.UtcNow;
-                
+                var city = lab.City.ToLower().Replace(" ", "");
+                city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
+
                 string auth = null;
+                var counter = 1;
                 foreach (string dom in domains)
                 {
-                    auth = DomAssignment.GenAuthCode();
-                    lab.DomAssignments.Add(new DomAssignment
+                    for (var x = 0; x < 4; x++)
                     {
-                        DomainName = dom,
-                        TeamAuth = auth
-                    });
+                        //create 4 teams/child domains per parent domain name
+                        var team = string.Format("{0}{1}", city, counter);
+                        auth = DomAssignment.GenAuthCode(team);
+                        lab.DomAssignments.Add(new DomAssignment
+                        {
+                            ParentZone = dom,
+                            TeamName = team,
+                            DomainName = string.Format("{0}.{1}", team, dom),
+                            TeamAuth = auth
+                        });
+                        counter++;
+                    }
                 }
 
                 LabSettings newLab = await SetLabSettingsAsync(lab);
 
+                using (var dns = new DnsAdmin())
+                {
+                    foreach(var dom in lab.DomAssignments)
+                    {
+                        await dns.CreateNewChildZone(dom.ParentZone, dom.TeamName, dom.DomainName);
+                    }
+                }
 
                 return await GetLabs(lab.PrimaryInstructor);
             }
@@ -170,9 +185,24 @@ namespace Infra
         #region Deletes
         public static async Task<IEnumerable<LabSettings>> RemoveLab(string labId, string instructor)
         {
-            var lab = await GetLab(labId);
-            await DocDBRepo.DB<LabSettings>.DeleteItemAsync(lab);
-            return await GetLabs(instructor);
+            try
+            {
+                var lab = await GetLab(labId);
+                await DocDBRepo.DB<LabSettings>.DeleteItemAsync(lab);
+                using (var dns = new DnsAdmin())
+                {
+                    foreach (var team in lab.DomAssignments)
+                    {
+                        await dns.RemoveChildZone(team.DomainName, team.ParentZone);
+                    }
+                }
+                return await GetLabs(instructor);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
         #endregion
     }

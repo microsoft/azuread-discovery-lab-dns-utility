@@ -9,6 +9,11 @@
                 @ViewBag.Title
             </div>
             <div class="panel-body">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger" role="alert">@ViewBag.ErrorMessage</div>
+                }
+
                 @using (Html.BeginForm("Index", "Team", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
                 {
                     @Html.AntiForgeryToken()

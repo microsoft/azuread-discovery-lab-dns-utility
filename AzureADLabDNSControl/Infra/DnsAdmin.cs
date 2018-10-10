@@ -75,6 +75,51 @@ namespace Infra
             await _client.RecordSets.DeleteAsync(Settings.DnsZoneRG, zoneName, "@", RecordType.TXT);
         }
 
+        public async Task RemoveChildZone(string childZoneName, string parentZoneName)
+        {
+            try
+            {
+                await _client.Zones.DeleteAsync(Settings.DnsZoneRG, childZoneName);
+                await _client.RecordSets.DeleteAsync(Settings.DnsZoneRG, parentZoneName, childZoneName, RecordType.NS);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task CreateNewChildZone(string parentZoneName, string teamName, string newChildZoneName)
+        {
+            try
+            {
+                //get parent NS records
+                var RS = await _client.RecordSets.GetAsync(Settings.DnsZoneRG, parentZoneName, "@", RecordType.NS);
+
+                var parms = new RecordSet();
+                parms.TTL = 3600;
+
+                parms.NsRecords = new List<NsRecord>();
+
+                foreach (var item in RS.NsRecords)
+                {
+                    parms.NsRecords.Add(item);
+                }
+                //create new NS record in parent for child domain
+                await _client.RecordSets.CreateOrUpdateAsync(Settings.DnsZoneRG, parentZoneName, teamName, RecordType.NS, parms);
+
+                //create new child zone
+                var zone = new Zone("global");
+                zone.ZoneType = ZoneType.Public;
+                var newZone = await _client.Zones.CreateOrUpdateAsync(Settings.DnsZoneRG, newChildZoneName, zone);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task SetTxtRecord(string record, string zoneName)
         {
             try

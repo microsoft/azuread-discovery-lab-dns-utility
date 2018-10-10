@@ -136,3 +136,8 @@ footer {
     white-space: -o-pre-wrap; /* Opera 7 */
     word-wrap: break-word; /* IE */
 }
+
+.bootstrap-datetimepicker-widget table td.disabled,
+.bootstrap-datetimepicker-widget table td.disabled:hover {
+    background-color:#f9dada;
+}

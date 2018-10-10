@@ -90,10 +90,23 @@ namespace AzureADLabDNSControl.Infra
         /// </summary>
         /// <param name="domain"></param>
         /// <returns></returns>
-        public async Task<AdalResponse> DeleteDomain(string tenantId, string domain)
+        public async Task<AdalResponse> DeleteDomain(string domain)
         {
             var url = string.Format("https://graph.microsoft.com/v1.0/domains/{0}", domain);
-            var res = await AdalLib.GetResourceAsync(url, tenantId, _hctx, HttpMethod.Delete);
+            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Delete);
+            if (!res.Successful)
+            {
+                var err = new AdalResponse<DomainError>(res);
+                
+                //test to see if the error is around dependency objects
+                if (err.Object.Error.Details.Count() > 0)
+                {
+                    if (err.Object.Error.Details.Any(d => d.Code == "ObjectInUse"))
+                    {
+                        res.Message = "ObjectInUse";
+                    }
+                }
+            }
             return res;
         }
 
@@ -102,18 +115,25 @@ namespace AzureADLabDNSControl.Infra
         /// </summary>
         /// <param name="domain"></param>
         /// <returns></returns>
-        public async Task<AdalResponse<IEnumerable<DirectoryObject>>> GetDomainReferences(string domain)
+        public async Task<AdalResponse<DirectoryObjects>> GetDomainReferences(string domain)
         {
             var url = string.Format("https://graph.microsoft.com/v1.0/domains/{0}/domainNameReferences", domain);
             var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Get);
-            return new AdalResponse<IEnumerable<DirectoryObject>>(res);
+            return new AdalResponse<DirectoryObjects>(res);
         }
 
-        public async Task InvalidateDomain(string tenantId, string domainName)
+        public async Task<AdalResponse> DeleteObject(string id)
+        {
+            var url = string.Format("https://graph.microsoft.com/v1.0/directoryObjects/{0}", id);
+            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Delete);
+            return res;
+        }
+
+        public async Task InvalidateDomain(string domainName)
         {
             var refs = await GetDomainReferences(domainName);
             return;
-            var delRes = await DeleteDomain(tenantId, domainName);
+            var delRes = await DeleteDomain(domainName);
 
         }
 
@@ -126,7 +146,7 @@ namespace AzureADLabDNSControl.Infra
             {
                 if (item.AssignedTenantId != null)
                 {
-                    delRes = await DeleteDomain(item.AssignedTenantId, item.DomainName);
+                    delRes = await DeleteDomain(item.DomainName);
                     if (!delRes.Successful)
                     {
                         errList.Add(new DeleteError

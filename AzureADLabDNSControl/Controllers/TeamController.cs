@@ -33,10 +33,11 @@ namespace AzureADLabDNSControl.Controllers
                 }
 
                 team = await LabRepo.GetDomAssignment(labCode, teamCode);
-                if (team == null)
+                if (team == null || team.TeamAssignment == null)
                 {
                     //something weird has happened with the team assignment when this user registered
                     //go re-register
+                    ViewBag.ErrorMessage = "Your saved team information has been changed, or expired. Please re-associate your login with your team information.";
                     return View("Register");
                 }
                 var res = DnsDTO.FromTeamDTO(team);

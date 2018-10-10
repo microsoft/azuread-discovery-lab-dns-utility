@@ -17,25 +17,30 @@
             Select a lab from the left to view details.
         </div>
         <div id="labDetails" class="col-sm-9 details" style="display:none">
+            <div class="form-group control">
+                <div class="col-sm-12">
+                    <button id="btnEditLab" class="btn btn-warning control"><span class="glyphicon glyphicon-cog"></span> Edit...</button>
+                    <button id="btnReport" class="btn btn-info control"><span class="glyphicon glyphicon-blackboard"></span> Print Report...</button>
+                    <button id="btnLabRefresh" class="btn btn-info control"><span class="glyphicon glyphicon-check"></span> Refresh</button>
+                    <button id="btnResetAllDomains" class="btn btn-danger control"><span class="glyphicon glyphicon-check"></span> Domain Reset</button>
+                    <button id="btnClose" class="btn btn-info control"><span class="glyphicon glyphicon-check"></span> Close</button>
+                </div>
+            </div>
+
             <div class="row">
-                <div class="col-sm-3 lbl">
+                <div class="col-sm-4 lbl">
                     <div class="lbl">Instructor</div>
                     <div class="lbl">Date</div>
                     <div class="lbl">City</div>
                     <div class="lbl">Lab Code</div>
                     <div class="lbl">Additional Instructors</div>
                 </div>
-                <div class="col-sm-7">
+                <div class="col-sm-8">
                     <div id="labInstructor"></div>
                     <div id="labLabDate"></div>
                     <div id="labCity"></div>
                     <div id="labLabCode"></div>
                     <div class="wordwrap" id="labInstructors"></div>
-                </div>
-                <div class="col-sm-2 buttons">
-                    <button id="btnEditLab" class="btn btn-warning"><span class="glyphicon glyphicon-cog"></span> Edit...</button>
-                    <button id="btnReport" class="btn btn-info"><span class="glyphicon glyphicon-blackboard"></span> Print Report...</button>
-                    <button id="btnClose" class="btn btn-info"><span class="glyphicon glyphicon-check"></span> Close</button>
                 </div>
             </div>
 
@@ -58,12 +63,12 @@
     </div>
 </div>
 
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" id="EditLab">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="LabModalLabel" aria-hidden="true" id="EditLab">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="myModalLabel">Edit Lab</h4>
+                <h4 class="modal-title" id="LabModalLabel">Edit Lab</h4>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -95,6 +100,8 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <span class="ui-loader pull-left">&nbsp;This may take a bit...<br /><img src="~/Content/Images/ajax-loader2.gif" /></span>
+
                 <button type="button" class="btn btn-primary" id="btnSaveLab">Save</button>
                 <button type="button" class="btn btn-danger" id="btnDeleteLab">Delete</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -103,6 +110,54 @@
     </div>
 </div>
 
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="TeamModalLabel" aria-hidden="true" id="EditTeam">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="TeamModalLabel">Team/Domain Resets</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-5">
+                        <label>Action</label>
+                    </div>
+                    <div class="col-sm-7">
+                        <label>Results</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5">
+                        <button type="button" class="btn btn-warning btn-sm" id="btnResetTeamAuth">Reset Team Auth</button>
+                    </div>
+                    <div class="col-sm-7">
+                        <div id="resetTeamAuthRes" class="resetResults"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5">
+                        <button type="button" class="btn btn-warning btn-sm" id="btnResetTxtRecord">Reset TXT Record</button>
+                    </div>
+                    <div class="col-sm-7">
+                        <div id="resetTxtRecordRes" class="resetResults"></div>
+                    </div>
+                </div>
+                <div class="row" id="divShowRemoveDomain">
+                    <div class="col-sm-5">
+                        <button type="button" class="btn btn-warning btn-sm" id="btnRemoveDomain">Remove Domain from Tenant</button>
+                    </div>
+                    <div class="col-sm-7">
+                        <div id="removeDomainRes" class="resetResults"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @section scripts {
     <script type="text/javascript" src="~/Scripts/bootstrap-tokenfield.min.js"></script>
     <script type="text/javascript">

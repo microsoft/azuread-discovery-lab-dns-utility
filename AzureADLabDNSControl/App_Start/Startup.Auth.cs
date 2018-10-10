@@ -43,8 +43,10 @@ namespace AzureADLabDNSControl
             {
                 OnResponseSignIn = ctx =>
                 {
-                    var task = AuthInit(ctx);
-                    task.GetAwaiter().GetResult();
+                    var task = Task.Run(async () => {
+                        await AuthInit(ctx);
+                    });
+                    task.Wait();
                 },
                 OnValidateIdentity = ctx =>
                 {
@@ -96,6 +98,7 @@ namespace AzureADLabDNSControl
                         string appBaseUrl = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase;
                         context.ProtocolMessage.RedirectUri = appBaseUrl + "/";
                         context.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl;
+                        context.ProtocolMessage.Prompt = "login";
                         return Task.FromResult(0);
                     },
                 },

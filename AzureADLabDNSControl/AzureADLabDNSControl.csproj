@@ -268,6 +268,7 @@
     <Compile Include="Graph\GraphError.cs" />
     <Compile Include="Graph\Models\DirectoryObject.cs" />
     <Compile Include="Graph\Models\Domain.cs" />
+    <Compile Include="Graph\Models\DomainError.cs" />
     <Compile Include="Graph\Models\ExtensionProperty.cs" />
     <Compile Include="Graph\OIDConfigResponse.cs" />
     <Compile Include="Infra\AADLinkControl.cs" />
@@ -281,6 +282,7 @@
     <Compile Include="Models\DomAssignment.cs" />
     <Compile Include="Models\LabDTO.cs" />
     <Compile Include="Models\LabSettings.cs" />
+    <Compile Include="Models\LabSettingsDTO.cs" />
     <Compile Include="Models\TeamAuthentication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -303,6 +305,7 @@
     <Content Include="Content\Images\403.jpg" />
     <Content Include="Content\Images\404.jpg" />
     <Content Include="Content\Images\ajax-loader.png" />
+    <Content Include="Content\Images\ajax-loader2.gif" />
     <Content Include="Content\Images\error.png" />
     <Content Include="Content\Images\ErrorBG.jpg" />
     <Content Include="Content\Images\gritter-light.png" />
@@ -376,6 +379,7 @@
     </Content>
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
@@ -388,7 +392,9 @@
     <Content Include="Views\Admin\Index.cshtml" />
     <Content Include="Views\Team\Index.cshtml" />
     <Content Include="Views\Admin\LabReport.cshtml" />
-    <Content Include="settings.config" />
+    <Content Include="settings.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="settingsTemplate.config" />
     <Content Include="Views\Home\Claims.cshtml" />
     <Content Include="Views\Home\_UserLogin.cshtml" />

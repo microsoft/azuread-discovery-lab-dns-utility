@@ -36,13 +36,13 @@ div.scrollWrap {
 
 #tableScroll {
     min-height: 300px;
-    max-height: 400px;
+    max-height: 350px;
     width: 100%;
     overflow: auto;
 }
 
 div.details {
-    min-height: 500px;
+    min-height: 550px;
     border-left: 1px solid #dadada;
     padding-left: 6px;
 }
@@ -67,4 +67,38 @@ ul.nav-stacked li a {
 
 #dtPicker .btn {
     min-width: unset !important;
+}
+div.control {
+    padding:4px;
+    margin-bottom:10px;
+    background-color:#efefef;
+    height:45px;
+    clear:both;
+}
+div.control button {
+    width:130px;
+    margin-left:3px;
+}
+#EditTeam div.modal-body button {
+    margin-bottom:8px;
+    width:180px;
+    margin-right:10px;
+}
+div.resetResults {
+    border-top:1px solid #efefef;
+    border-bottom:1px solid #efefef;
+    padding:6px;
+    min-height:40px;
+}
+.teamRow {
+    cursor:pointer;
+}
+.teamRow:hover {
+    background-color:#e5eafc!important;
+}
+div.modal-footer span.ui-loader {
+    font-size:.8em;
+    color:#8a8a8a;
+    text-align:left;
+    padding-left:10px;
 }
