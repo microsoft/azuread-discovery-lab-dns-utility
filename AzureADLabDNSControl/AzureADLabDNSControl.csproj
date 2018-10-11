@@ -392,9 +392,9 @@
     <Content Include="Views\Admin\Index.cshtml" />
     <Content Include="Views\Team\Index.cshtml" />
     <Content Include="Views\Admin\LabReport.cshtml" />
-    <Content Include="settings.config">
+    <None Include="settings.config">
       <SubType>Designer</SubType>
-    </Content>
+    </None>
     <Content Include="settingsTemplate.config" />
     <Content Include="Views\Home\Claims.cshtml" />
     <Content Include="Views\Home\_UserLogin.cshtml" />
