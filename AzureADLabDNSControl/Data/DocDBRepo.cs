@@ -18,10 +18,37 @@ namespace DocDBLib
 
         public static class Settings
         {
+            private static string _currRegion;
+            private static string[] _regions;
+
             public static string DocDBUri;
             public static string DocDBAuthKey;
             public static string DocDBName;
             public static string DocDBCollection;
+            public static string[] DocDBRegions
+            {
+                get
+                {
+                    return _regions.Except(new[] { _currRegion }).ToArray();
+                }
+                set
+                {
+                    _regions = value;
+                }
+            }
+
+            public static string DocDBCurrentRegion
+            {
+                get
+                {
+                    return _currRegion;
+                }
+                set
+                {
+                    //if running locally with no environment variable, grab the first assigned region from the collection
+                    _currRegion = value ?? DocDBRegions[0];
+                }
+            }
         }
 
         public static class DB<T> where T : class, IDocModelBase
@@ -260,7 +287,20 @@ namespace DocDBLib
         public static async Task<DocumentClient> Initialize()
         {
             baseDocCollectionUri = UriFactory.CreateDocumentCollectionUri(Settings.DocDBName, Settings.DocDBCollection);
-            client = new DocumentClient(new Uri(Settings.DocDBUri), Settings.DocDBAuthKey);
+            ConnectionPolicy connPolicy = new ConnectionPolicy
+            {
+                ConnectionMode = ConnectionMode.Direct,
+                ConnectionProtocol = Protocol.Tcp,
+                UseMultipleWriteLocations = true
+            };
+
+            connPolicy.PreferredLocations.Add(Settings.DocDBCurrentRegion);
+            foreach (var region in Settings.DocDBRegions)
+            {
+                connPolicy.PreferredLocations.Add(region);
+            }
+
+            client = new DocumentClient(new Uri(Settings.DocDBUri), Settings.DocDBAuthKey, connPolicy);
             await CreateDatabaseIfNotExistsAsync();
             await CreateCollectionIfNotExistsAsync();
             return client;

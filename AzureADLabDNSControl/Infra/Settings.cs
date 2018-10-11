@@ -26,6 +26,10 @@ namespace Infra
             DocDBRepo.Settings.DocDBName = appSettings["DocDBName"];
             DocDBRepo.Settings.DocDBCollection = appSettings["DocDBCollection"];
 
+            //IMPORTANT: Set Regions before setting CurrentRegion
+            DocDBRepo.Settings.DocDBRegions = (appSettings["DocDBRegions"] as string).Split(',');
+            DocDBRepo.Settings.DocDBCurrentRegion = Environment.GetEnvironmentVariable("REGION_NAME");
+
             var client = DocDBRepo.Initialize().Result;
             var s = client.AuthKey;
 

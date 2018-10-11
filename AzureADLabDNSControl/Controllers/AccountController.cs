@@ -42,7 +42,10 @@ namespace AzureADLabDNSControl.Controllers
 
             HttpContext.GetOwinContext().Authentication.SignOut(
                 new AuthenticationProperties { RedirectUri = callbackUrl },
-                OpenIdConnectAuthenticationDefaults.AuthenticationType, CookieAuthenticationDefaults.AuthenticationType);
+                OpenIdConnectAuthenticationDefaults.AuthenticationType, 
+                CookieAuthenticationDefaults.AuthenticationType,
+                CustomAuthType.LabAdmin,
+                CustomAuthType.LabUser);
         }
 
         public ActionResult SignOutCallback()
