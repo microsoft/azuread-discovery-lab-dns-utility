@@ -134,19 +134,38 @@
             setDetail(res.Settings);
         }, "POST");
     }
+    var last_response_len = 0;
 
     function deleteLab() {
         if (!confirm("Are you sure you want to delete this lab?"))
             return;
 
         var data = $("#labDetails").data("data");
-        SiteUtil.AjaxCall("/api/Lab/DeleteLab/" + data.id, null, function (res) {
-            $("#EditLab").modal('hide');
-            loadLabList(res);
-            setDetail(null);
-        }, "POST");
 
+        last_response_len = 0;
+        $(".ui-loader2").css("visibility", "visible");
+        $("div.modal-footer div.col-sm-7 button").attr("disabled", "disabled");
+
+        $.ajax({
+            url: "/api/Lab/DeleteLab/" + data.id,
+            data: null,
+            type: "POST",
+            withCredentials: true,
+            contentType: "application/json",
+            xhrFields: {
+                onprogress: setProg
+            },
+            success: function (res, status, xhr) {
+                $("#EditLab").modal('hide');
+                location.href = location.href;
+            },
+            complete: function () {
+                $(".ui-loader2").css("visibility", "hidden");
+                $("div.modal-footer div.col-sm-7 button").removeAttr("disabled");
+            }
+        });
     }
+
     function saveLab(data) {
         var action = (($("#LabModalLabel").html() == "Add Lab") ? "AddLab" : "UpdateLab");
         var data = {};
@@ -164,14 +183,50 @@
         }
 
         data.instructors = $('#Instructors').tokenfield('getTokensList', ',', false, false).split(",");
-
-        SiteUtil.AjaxCall("/api/Lab/" + action, JSON.stringify(data), function (res) {
-            $("#EditLab").modal('hide');
-            loadLabList(res);
-            getLab(data.id);
-        }, "POST");
+        last_response_len = 0;
+        $(".ui-loader2").css("visibility", "visible");
+        $("div.modal-footer div.col-sm-7 button").attr("disabled", "disabled");
+        $.ajax({
+            url: "/api/Lab/" + action,
+            data: JSON.stringify(data),
+            type: "POST",
+            withCredentials: true,
+            contentType: "application/json",
+            xhrFields: {
+                onprogress: setProg
+            },
+            success: function (res, status, xhr) {
+                $("#EditLab").modal('hide');
+                location.href = location.href;
+            },
+            complete: function () {
+                $(".ui-loader2").css("visibility", "hidden");
+                $("div.modal-footer div.col-sm-7 button").removeAttr("disabled");
+            }
+        });
     }
-
+    function getData(response) {
+        var this_response;
+        if (last_response_len == 0) {
+            this_response = response;
+            last_response_len = response.length;
+        }
+        else {
+            this_response = response.substring(last_response_len);
+            last_response_len = response.length;
+        }
+        var data = JSON.parse(this_response);
+        return data;
+    }
+    function setProg(e) {
+        var data = getData(e.currentTarget.response);
+        $("div.ui-loader2 div.msg").html(data.Update);
+        var prog = parseInt((data.ActivitiesCompleted / data.TotalActivities) * 100);
+        $("div.progress div.progress-bar")
+            .css("width", prog + "%")
+            .attr("aria-valuenow", prog);
+        $("span.barcontent").html(prog + "%");
+    }
     function loadLabForm(data) {
         $("#LabModalLabel").html((data == null) ? "Add Lab" : "Edit Lab");
 

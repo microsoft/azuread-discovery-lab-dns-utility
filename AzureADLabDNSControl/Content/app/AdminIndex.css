@@ -96,7 +96,7 @@ div.resetResults {
 .teamRow:hover {
     background-color:#e5eafc!important;
 }
-div.modal-footer span.ui-loader {
+div.modal-footer div.ui-loader2 {
     font-size:.8em;
     color:#8a8a8a;
     text-align:left;

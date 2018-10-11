@@ -411,7 +411,15 @@ var SiteUtil = function () {
                 document.body.removeChild(textarea);
             }
         }
-    } return {
+    }
+    function _getProgBar(progress) {
+        var res = $("<div/>");
+        var bar = $("<div/>").addClass("progress").appendTo(res);
+        $("<div/>").addClass("progress-bar").css("width", (progress / 100)).attr({ "aria-valuenow": progress, "aria-valuemax": 100 }).html(progress + "%").appendTo(bar);
+        return res.html();
+    }
+    return {
+        GetProgBar: _getProgBar,
         Highlight: highlight,
         Copy: copyToClipboard,
         AddCommas: addCommas,

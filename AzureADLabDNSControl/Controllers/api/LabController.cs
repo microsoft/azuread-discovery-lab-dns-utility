@@ -1,6 +1,7 @@
 ﻿using AzureADLabDNSControl.Infra;
 using AzureADLabDNSControl.Models;
 using Infra;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,85 @@ namespace AzureADLabDNSControl.Controllers.api
     {
         //Lab Operations
         [HttpPost]
-        public async Task<IEnumerable<LabDTO>> AddLab(LabSettings lab)
+        public HttpResponseMessage AddLab(LabSettings lab)
         {
-            var res = await LabRepo.AddNewLab(lab, Settings.DomainList.ToArray());
-            return MapLabs(res);
+            IEnumerable<LabSettings> res = new List<LabSettings>();
+            var response = Request.CreateResponse();
+            response.Content = new PushStreamContent(
+                async(outputStream, httpContent, transportContext) =>
+                {
+                    try
+                    {
+                        var labrepo = new LabRepo(outputStream);
+                        labrepo.LabActivity += Labrepo_LabActivity;
+
+                        res = await labrepo.AddNewLab(lab, Settings.DomainList.ToArray());
+                    }
+                    catch (HttpException ex)
+                    {
+                        if (ex.ErrorCode == -2147023667)
+                        {
+                            return;
+                        }
+                    }
+                    finally
+                    {
+                        var str = JsonConvert.SerializeObject(res);
+                        var buffer = Encoding.UTF8.GetBytes(str);
+                        await outputStream.WriteAsync(buffer, 0, buffer.Length);
+                        outputStream.Close();
+                    }
+                }
+            );
+            return response;
+        }
+
+        [HttpPost]
+        public HttpResponseMessage DeleteLab(string id)
+        {
+            IEnumerable<LabSettings> res = new List<LabSettings>();
+            var response = Request.CreateResponse();
+            response.Content = new PushStreamContent(
+                async (outputStream, httpContent, transportContext) =>
+                {
+                    try
+                    {
+                        var labrepo = new LabRepo(outputStream);
+                        labrepo.LabActivity += Labrepo_LabActivity;
+
+                        res = await labrepo.RemoveLab(id, User.Identity.Name);
+                    }
+                    catch (HttpException ex)
+                    {
+                        if (ex.ErrorCode == -2147023667)
+                        {
+                            return;
+                        }
+                    }
+                    finally
+                    {
+                        var str = JsonConvert.SerializeObject(res);
+                        var buffer = Encoding.UTF8.GetBytes(str);
+                        await outputStream.WriteAsync(buffer, 0, buffer.Length);
+                        outputStream.Close();
+                    }
+                }
+            );
+            return response;
+        }
+
+        private void Labrepo_LabActivity(object sender, LabActivityArgs e)
+        {
+            var res = new
+            {
+                e.Update,
+                e.TotalActivities,
+                e.ActivitiesCompleted
+            };
+            
+            var str = JsonConvert.SerializeObject(res);
+            var buffer = Encoding.UTF8.GetBytes(str);
+            e.OutputStream.WriteAsync(buffer, 0, buffer.Length);
         }
 
         public async Task<bool> CheckLabDate([FromUri] DateTime labDate)
@@ -61,12 +137,7 @@ namespace AzureADLabDNSControl.Controllers.api
             var res = await LabRepo.ResetLabCode(lab, User.Identity.Name);
             return res;
         }
-        [HttpPost]
-        public async Task<IEnumerable<LabDTO>> DeleteLab(string id)
-        {
-            var res = await LabRepo.RemoveLab(id, User.Identity.Name);
-            return MapLabs(res);
-        }
+
         private IEnumerable<LabDTO> MapLabs(IEnumerable<LabSettings> list)
         {
             return list.Select(l => new LabDTO
@@ -157,7 +228,7 @@ namespace AzureADLabDNSControl.Controllers.api
                     //reset TXT records
                     using (var dns = new DnsAdmin())
                     {
-                        await dns.RemoveChildZone(team.TeamAssignment.DomainName, team.TeamAssignment.ParentZone);
+                        await dns.RemoveChildZone(team.TeamAssignment.ParentZone, team.TeamAssignment.TeamName, team.TeamAssignment.DomainName);
                     }
                 }
 

@@ -23,12 +23,6 @@ namespace AzureADLabDNSControl
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             AntiForgeryConfig.UniqueClaimTypeIdentifier = "http://schemas.microsoft.com/identity/claims/objectidentifier";
-
-            var task = Task.Run(async () => {
-                await Settings.Init(ConfigurationManager.AppSettings);
-            });
-            task.Wait();
-
         }
     }
 }

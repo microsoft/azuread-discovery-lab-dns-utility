@@ -20,34 +20,43 @@ namespace Infra
     public class DnsAdmin : IDisposable
     {
         private DnsManagementClient _client;
-
-        public DnsAdmin()
-        {
-            var task = Task.Run(async () => {
-                await InitAsync();
-            });
-            task.Wait();
-        }
+        private bool _isInit;
 
         private async Task InitAsync()
         {
+            if (_isInit)
+                return;
+
             // Build the service credentials and DNS management client
             var serviceCreds = await ApplicationTokenProvider.LoginSilentAsync(Startup.LabAdminTenantId, Startup.LabAdminClientId, Startup.LabAdminSecret);
             _client = new DnsManagementClient(serviceCreds)
             {
                 SubscriptionId = Settings.AzureSubscriptionId
             };
-
+            _isInit = true;
         }
 
         public async Task<IEnumerable<Zone>> GetZoneList()
         {
-            var res = await _client.Zones.ListByResourceGroupAsync(Settings.DnsZoneRG);
-            return res.ToList();
+            try
+            {
+                await InitAsync();
+
+                var res = await _client.Zones.ListByResourceGroupAsync(Settings.DnsZoneRG);
+                var res2 = res.Where(d => d.Tags.Any(t => t.Key == "RootLabDomain" && t.Value == "true")).ToList();
+                return res2;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task ResetAllZones()
         {
+            await InitAsync();
+
             try
             {
                 var zones = await GetZoneList();
@@ -72,15 +81,18 @@ namespace Infra
 
         public async Task ClearTxtRecord(string zoneName)
         {
+            await InitAsync();
             await _client.RecordSets.DeleteAsync(Settings.DnsZoneRG, zoneName, "@", RecordType.TXT);
         }
 
-        public async Task RemoveChildZone(string childZoneName, string parentZoneName)
+        public async Task RemoveChildZone(string parentZoneName, string teamName, string childZoneName)
         {
+            await InitAsync();
+
             try
             {
                 await _client.Zones.DeleteAsync(Settings.DnsZoneRG, childZoneName);
-                await _client.RecordSets.DeleteAsync(Settings.DnsZoneRG, parentZoneName, childZoneName, RecordType.NS);
+                await _client.RecordSets.DeleteAsync(Settings.DnsZoneRG, parentZoneName, teamName, RecordType.NS);
             }
             catch (Exception)
             {
@@ -91,27 +103,27 @@ namespace Infra
 
         public async Task CreateNewChildZone(string parentZoneName, string teamName, string newChildZoneName)
         {
+            await InitAsync();
+
             try
             {
-                //get parent NS records
-                var RS = await _client.RecordSets.GetAsync(Settings.DnsZoneRG, parentZoneName, "@", RecordType.NS);
+                //create new child zone
+                var zone = new Zone("global");
+                zone.ZoneType = ZoneType.Public;
+                var newZone = await _client.Zones.CreateOrUpdateAsync(Settings.DnsZoneRG, newChildZoneName, zone);
 
                 var parms = new RecordSet();
                 parms.TTL = 3600;
 
                 parms.NsRecords = new List<NsRecord>();
 
-                foreach (var item in RS.NsRecords)
+                foreach (var item in newZone.NameServers)
                 {
-                    parms.NsRecords.Add(item);
+                    parms.NsRecords.Add(new NsRecord(item));
                 }
+
                 //create new NS record in parent for child domain
                 await _client.RecordSets.CreateOrUpdateAsync(Settings.DnsZoneRG, parentZoneName, teamName, RecordType.NS, parms);
-
-                //create new child zone
-                var zone = new Zone("global");
-                zone.ZoneType = ZoneType.Public;
-                var newZone = await _client.Zones.CreateOrUpdateAsync(Settings.DnsZoneRG, newChildZoneName, zone);
             }
             catch (Exception)
             {
@@ -122,6 +134,8 @@ namespace Infra
 
         public async Task SetTxtRecord(string record, string zoneName)
         {
+            await InitAsync();
+
             try
             {
                 var recordSetParams = new RecordSet();

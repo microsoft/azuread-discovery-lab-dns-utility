@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -12,6 +13,114 @@ namespace Infra
 {
     public class LabRepo
     {
+        public event EventHandler<LabActivityArgs> LabActivity;
+        private int _totalActivities;
+        private int _activitiesCompleted;
+        private Stream _outputStream;
+
+        public LabRepo(Stream stream)
+        {
+            _outputStream = stream;
+        }
+
+        protected virtual void UpdateActivity(LabActivityArgs e)
+        {
+            LabActivity?.Invoke(this, e);
+        }
+
+        private void Activity(string Message)
+        {
+            _activitiesCompleted++;
+
+            UpdateActivity(new LabActivityArgs
+            {
+                ActivitiesCompleted = _activitiesCompleted,
+                TotalActivities = _totalActivities,
+                Update = Message,
+                OutputStream = _outputStream
+            });
+        }
+
+        public async Task<IEnumerable<LabSettings>> AddNewLab(LabSettings lab, string[] domains)
+        {
+            try
+            {
+                _activitiesCompleted = 0;
+                lab.LabCode = LabSettings.GenLabCode();
+                lab.CreateDate = DateTime.UtcNow;
+                var city = lab.City.ToLower().Replace(" ", "");
+                city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
+
+                string auth = null;
+                var counter = 1;
+                foreach (string dom in domains)
+                {
+                    for (var x = 0; x < 4; x++)
+                    {
+                        //create 4 teams/child domains per parent domain name
+                        var team = string.Format("{0}{1}", city, counter);
+                        auth = DomAssignment.GenAuthCode(team);
+                        lab.DomAssignments.Add(new DomAssignment
+                        {
+                            ParentZone = dom,
+                            TeamName = team,
+                            DomainName = string.Format("{0}.{1}", team, dom),
+                            TeamAuth = auth
+                        });
+                        counter++;
+                    }
+                }
+                _totalActivities = counter + 2;
+                Activity("Saving Lab...");
+
+                LabSettings newLab = await SetLabSettingsAsync(lab);
+                Activity("Lab Saved, updating DNS...");
+
+                using (var dns = new DnsAdmin())
+                {
+                    foreach (var dom in lab.DomAssignments)
+                    {
+                        await dns.CreateNewChildZone(dom.ParentZone, dom.TeamName, dom.DomainName);
+                        Activity(string.Format("Saved {0}...", dom.DomainName));
+                    }
+                }
+
+                return await GetLabs(lab.PrimaryInstructor);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<LabSettings>> RemoveLab(string labId, string instructor)
+        {
+            try
+            {
+                _activitiesCompleted = 0;
+
+                var lab = await GetLab(labId);
+                _totalActivities = lab.DomAssignments.Count() + 1;
+
+                Activity("Deleting Lab...");
+                await DocDBRepo.DB<LabSettings>.DeleteItemAsync(lab);
+
+                using (var dns = new DnsAdmin())
+                {
+                    foreach (var team in lab.DomAssignments)
+                    {
+                        await dns.RemoveChildZone(team.ParentZone, team.TeamName, team.DomainName);
+                        Activity(string.Format("Deleted {0}...", team.DomainName));
+                    }
+                }
+
+                return await GetLabs(instructor);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         #region Gets
         public static async Task<LabSettings> GetLab(string LabId)
@@ -55,7 +164,6 @@ namespace Infra
         #endregion
 
         #region Updates
-
         public static async Task<IEnumerable<LabSettings>> UpdateLab(LabSettings lab, string instructor)
         {
             await DocDBRepo.DB<LabSettings>.UpdateItemAsync(lab);
@@ -120,53 +228,6 @@ namespace Infra
         #endregion
 
         #region Inserts
-        public static async Task<IEnumerable<LabSettings>> AddNewLab(LabSettings lab, string[] domains)
-        {
-            try
-            {
-                lab.LabCode = LabSettings.GenLabCode();
-                lab.CreateDate = DateTime.UtcNow;
-                var city = lab.City.ToLower().Replace(" ", "");
-                city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
-
-                string auth = null;
-                var counter = 1;
-                foreach (string dom in domains)
-                {
-                    for (var x = 0; x < 4; x++)
-                    {
-                        //create 4 teams/child domains per parent domain name
-                        var team = string.Format("{0}{1}", city, counter);
-                        auth = DomAssignment.GenAuthCode(team);
-                        lab.DomAssignments.Add(new DomAssignment
-                        {
-                            ParentZone = dom,
-                            TeamName = team,
-                            DomainName = string.Format("{0}.{1}", team, dom),
-                            TeamAuth = auth
-                        });
-                        counter++;
-                    }
-                }
-
-                LabSettings newLab = await SetLabSettingsAsync(lab);
-
-                using (var dns = new DnsAdmin())
-                {
-                    foreach(var dom in lab.DomAssignments)
-                    {
-                        await dns.CreateNewChildZone(dom.ParentZone, dom.TeamName, dom.DomainName);
-                    }
-                }
-
-                return await GetLabs(lab.PrimaryInstructor);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
         public static async Task<LabSettings> SetLabSettingsAsync(LabSettings item)
         {
             try
@@ -181,29 +242,13 @@ namespace Infra
             }
         }
         #endregion
+    }
 
-        #region Deletes
-        public static async Task<IEnumerable<LabSettings>> RemoveLab(string labId, string instructor)
-        {
-            try
-            {
-                var lab = await GetLab(labId);
-                await DocDBRepo.DB<LabSettings>.DeleteItemAsync(lab);
-                using (var dns = new DnsAdmin())
-                {
-                    foreach (var team in lab.DomAssignments)
-                    {
-                        await dns.RemoveChildZone(team.DomainName, team.ParentZone);
-                    }
-                }
-                return await GetLabs(instructor);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
-        #endregion
+    public class LabActivityArgs: EventArgs
+    {
+        public string Update { get; set; }
+        public int TotalActivities { get; set; }
+        public int ActivitiesCompleted { get; set; }
+        public Stream OutputStream { get; set; }
     }
 }

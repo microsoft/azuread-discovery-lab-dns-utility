@@ -49,6 +49,9 @@ textarea:not(.max) {
     color: #efefef;
     float: right;
 }
+.ui-loader2 {
+    visibility:hidden;
+}
 
 #collapsedLoader {
     visibility: hidden;
