@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<SelectListItem>
+@{
     ViewBag.Title = "Lab Admin";
 }
 
@@ -33,6 +34,9 @@
                     <div class="lbl">Date</div>
                     <div class="lbl">City</div>
                     <div class="lbl">Lab Code</div>
+                    <div class="lbl">Domain Resource Group</div>
+                    <div class="lbl">Estimated Attendees</div>
+                    <div class="lbl">Lab State</div>
                     <div class="lbl">Additional Instructors</div>
                 </div>
                 <div class="col-sm-8">
@@ -40,6 +44,9 @@
                     <div id="labLabDate"></div>
                     <div id="labCity"></div>
                     <div id="labLabCode"></div>
+                    <div id="labDomGroup"></div>
+                    <div id="labEstimatedAttendees"></div>
+                    <div id="labState"></div>
                     <div class="wordwrap" id="labInstructors"></div>
                 </div>
             </div>
@@ -63,111 +70,9 @@
     </div>
 </div>
 
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="LabModalLabel" aria-hidden="true" id="EditLab">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="LabModalLabel">Edit Lab</h4>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div id="dtPicker" class="col-sm-6">
-                        <label for="LabDate">Lab Date</label>
-                        <div class="input-group date" id="datepickerLab">
-                            <input type="text" class="form-control max" style="display:inline-block" id="LabDate" />
-                            <span class="input-group-addon">
-                                <span class="glyphicon-calendar glyphicon"></span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <label for="City">City</label>
-                        <input type="text" class="form-control max" style="display:inline-block" id="City" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <label for="Instructor">Instructor</label>
-                        <input type="text" class="form-control max" style="display:inline-block" id="Instructor" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <label for="Instructors">Additional Instructors <span class="hint">(tab after each alias)</span></label>
-                        <input type="text" class="form-control max" id="Instructors" placeholder="alias@microsoft.com" />
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div class="col-sm-5">
-                    <div class="ui-loader2">
-                        <div class="msg"></div>
-                        <div class="progress">
-                            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;min-width: 2em;">
-                                <span class="barcontent">0%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-7">
-                    <button type="button" class="btn btn-primary" id="btnSaveLab">Save</button>
-                    <button type="button" class="btn btn-danger" id="btnDeleteLab">Delete</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+@Html.Partial("_labModal", Model)
+@Html.Partial("_teamModal")
 
-
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="TeamModalLabel" aria-hidden="true" id="EditTeam">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="TeamModalLabel">Team/Domain Resets</h4>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-sm-5">
-                        <label>Action</label>
-                    </div>
-                    <div class="col-sm-7">
-                        <label>Results</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-5">
-                        <button type="button" class="btn btn-warning btn-sm" id="btnResetTeamAuth">Reset Team Auth</button>
-                    </div>
-                    <div class="col-sm-7">
-                        <div id="resetTeamAuthRes" class="resetResults"></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-5">
-                        <button type="button" class="btn btn-warning btn-sm" id="btnResetTxtRecord">Reset TXT Record</button>
-                    </div>
-                    <div class="col-sm-7">
-                        <div id="resetTxtRecordRes" class="resetResults"></div>
-                    </div>
-                </div>
-                <div class="row" id="divShowRemoveDomain">
-                    <div class="col-sm-5">
-                        <button type="button" class="btn btn-warning btn-sm" id="btnRemoveDomain">Remove Domain from Tenant</button>
-                    </div>
-                    <div class="col-sm-7">
-                        <div id="removeDomainRes" class="resetResults"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
 @section scripts {
     <script type="text/javascript" src="~/Scripts/bootstrap-tokenfield.min.js"></script>
     <script type="text/javascript">

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Threading.Tasks;
-using Infra;
+using Lab.Common;
 using Microsoft.Owin;
 using Owin;
 
@@ -11,12 +11,20 @@ namespace AzureADLabDNSControl
     {
         public void Configuration(IAppBuilder app)
         {
-            ConfigureAuth(app);
+            var dir = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
 
             var task = Task.Run(async () => {
-                await Settings.Init(ConfigurationManager.AppSettings);
+                await Settings.Init(ConfigurationManager.AppSettings, dir);
+                ConfigureAuth(app);
             });
-            task.Wait();
+            try
+            {
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                Logging.WriteToAppLog("Error during initialization", System.Diagnostics.EventLogEntryType.Error, ex);
+            }
         }
     }
 }

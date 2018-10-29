@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using Lab.Common.Infra;
+using System.Web;
 using System.Web.Mvc;
 
 namespace AzureADLabDNSControl
@@ -7,7 +8,7 @@ namespace AzureADLabDNSControl
     {
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
-            filters.Add(new HandleErrorAttribute());
+            filters.Add(new HandleAndLogErrorAttribute());
         }
     }
 }

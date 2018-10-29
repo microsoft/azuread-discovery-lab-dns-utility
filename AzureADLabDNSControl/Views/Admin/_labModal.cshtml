@@ -1,0 +1,75 @@
+﻿@model List<SelectListItem>
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="LabModalLabel" aria-hidden="true" id="EditLab">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="LabModalLabel">Edit Lab</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div id="dtPicker" class="col-sm-6">
+                        <label for="LabDate">Lab Date</label>
+                        <div class="input-group date" id="datepickerLab">
+                            <input type="text" class="form-control max" style="display:inline-block" id="LabDate" />
+                            <span class="input-group-addon">
+                                <span class="glyphicon-calendar glyphicon"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="City">City</label>
+                        <input type="text" class="form-control max" style="display:inline-block" id="City" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="DomainGroup">Domain Group</label>
+                        @Html.DropDownList("DomainGroup", Model, new { @class = "form-control" })
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="AttendeeCount">Attendee Count</label>
+                        <select class="form-control" id="AttendeeCount">
+                            <option value="20">Up to 20</option>
+                            <option value="30">Up to 30</option>
+                            <option value="50">Up to 50</option>
+                            <option value="75">Up to 75</option>
+                            <option value="100">Up to 100</option>
+                            <option value="150">Up to 150</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label for="Instructor">Instructor</label>
+                        <input type="text" class="form-control max" style="display:inline-block" id="Instructor" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label for="Instructors">Additional Instructors <span class="hint">(tab after each alias)</span></label>
+                        <input type="text" class="form-control max" id="Instructors" placeholder="alias@microsoft.com" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="col-sm-5">
+                    <div class="ui-loader2">
+                        <div class="msg"></div>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;min-width: 2em;">
+                                <span class="barcontent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-7">
+                    <button type="button" class="btn btn-primary" id="btnSaveLab">Save</button>
+                    <button type="button" class="btn btn-danger" id="btnDeleteLab">Delete</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

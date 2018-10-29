@@ -30,6 +30,13 @@ namespace AzureADLabDNSControl
                        "~/Scripts/respond.js"
                        ));
 
+            bundles.Add(new ScriptBundle("~/bundles/datatables").Include(
+                    "~/Scripts/lib/jquery.dataTables.js",
+                    "~/Scripts/lib/dataTables.bootstrap.js"));
+
+            bundles.Add(new StyleBundle("~/content/datatablescss").Include(
+                    "~/Content/datatables/css/dataTables.bootstrap.css"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/bootstrap-datetimepicker.css",

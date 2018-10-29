@@ -1,5 +1,5 @@
-﻿using AzureADLabDNSControl.Models;
-using Infra;
+﻿using Lab.Common;
+using Lab.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

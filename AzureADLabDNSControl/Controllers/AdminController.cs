@@ -1,5 +1,7 @@
-﻿using AzureADLabDNSControl.Models;
-using Infra;
+﻿using AzureADLabDNSControl.Infra;
+using Lab.Common;
+using Lab.Common.Repo;
+using Lab.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +17,26 @@ namespace AzureADLabDNSControl.Controllers
         // GET: Admin
         public ActionResult Index()
         {
-            return View();
+            var groups = Settings.DomainGroups.Select(d => new DomainGroupDTO(d.AzureSubscriptionId, d.DnsZoneRG));
+            var data = SiteUtils.LoadListFromDictionary(groups.ToDictionary(o => o.AzureSubscriptionId + ":" + o.DnsZoneRG, o => o.DnsZoneRG));
+            return View(data);
         }
 
         public async Task<ActionResult> LabReport(string id)
         {
             var lab = await LabRepo.GetLab(id);
             return View(lab);
+        }
+    }
+    public class DomainGroupDTO
+    {
+        public string AzureSubscriptionId { get; set; }
+        public string DnsZoneRG { get; set; }
+
+        public DomainGroupDTO(string subId, string zone)
+        {
+            AzureSubscriptionId = subId;
+            DnsZoneRG = zone;
         }
     }
 }

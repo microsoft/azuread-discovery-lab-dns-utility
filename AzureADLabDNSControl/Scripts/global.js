@@ -28,7 +28,7 @@ window.onerror = function (msg, url, line, col, err) {
     hideAjax();
     localErr.Message = msg + "\n  URL: " + url + "\n  Line: " + line + "\n  Col: " + col + "\n  Stack:\n  " + (((err) && (err.stack)) ? err.stack : "N/A");
     localErr.thrownError = "Global Catch";
-    var txt = "A general web application error occured. <a href='javascript:popErrorUpdater();'>Click</a> to view details.";
+    var txt = "A general web application error occured. Please <a href='javascript:popErrorUpdater();'>help us out</a> by supplying additional information.";
 
     SiteUtil.ShowMessage(txt.length > 0 ? txt : 'Unexpected error.', 'Error', SiteUtil.AlertImages.error);
     // If you return true, then error alerts (like in older versions of Internet Explorer) will be suppressed.
@@ -53,7 +53,7 @@ $(document).ajaxError(function (event, xhr, ajaxOptions, thrownError) {
         localErr.Message = xhr.responseText;
         localErr.thrownError = (thrownError || "Unknown");
     }
-    var txt = "There was a problem with your request. <a href='javascript:popErrorUpdater();'>Click</a> to view details.";
+    var txt = "There was a problem with your request. Please <a href='javascript:popErrorUpdater();'>help us out</a> by supplying additional information.";
     SiteUtil.ShowMessage(txt.length > 0 ? txt : 'Unexpected error.', 'Error', SiteUtil.AlertImages.error);
 });
 function popErrorUpdater() {
@@ -62,16 +62,20 @@ function popErrorUpdater() {
     var eid = err.DbErrorId || 0;
 
     var dialog = SiteUtil.ShowModal({
-        body: "Error Details:<br><pre>" + err.Message + "</pre>",
+        body: "Please enter any additional information that might help us sort this out - what you were trying to do, what data you were manipulating, etc.:",
         title: "Additional Error Detail",
-        callback: function () {
-            $(dialog).modal("hide");
+        callback: function (userComment) {
+            bSkipSBInit = true;
+            SiteUtil.AjaxCall("/api/UpdateError", JSON.stringify({ "Id": eid, "Comment": userComment, "Error": JSON.stringify(err) }), function () {
+                $(dialog).modal("hide");
+            }, "POST", "Error message updated; thanks!");
         },
         displayCallback: function () {
             $("#nDialogVal").focus();
         }
     });
 }
+
 function setHeaderTitle(s) {
     $("div[data-role=header] h1").html(s);
 }
@@ -243,7 +247,7 @@ var SiteUtil = function () {
         var re = /([a-z])([A-Z])/g;
         return sTitle.replace(re, "$1 $2");
     }
-    function _ajaxCall(url, data, callback, method, successMessage) {
+    function _ajaxCall(url, data, callback, method, successMessage, failCallback) {
         method = (method == null) ? "GET" : method;
         successMessage = (successMessage == null) ? "" : successMessage;
 
@@ -258,6 +262,10 @@ var SiteUtil = function () {
                     notifySuccess("Success", successMessage);
                 }
                 if (callback) callback(res, xhr);
+            },
+            failure: function (res) {
+                if (failCallback)
+                    failCallback(res);
             }
         });
     }

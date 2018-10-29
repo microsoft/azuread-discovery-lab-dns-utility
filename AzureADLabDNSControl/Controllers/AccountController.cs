@@ -6,7 +6,7 @@ using System.Web.Mvc;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Microsoft.Owin.Security;
-using Infra;
+using Lab.Common;
 
 namespace AzureADLabDNSControl.Controllers
 {

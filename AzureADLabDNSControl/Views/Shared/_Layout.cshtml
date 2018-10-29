@@ -1,4 +1,4 @@
-﻿@using Infra
+﻿@using Lab.Common
 <!DOCTYPE html>
 <html>
 <head>
@@ -29,7 +29,18 @@
                     <li>@Html.ActionLink("About", "About", "Home")</li>
                     @if (User.IsInRole(CustomRoles.LabAdmin))
                     {
-                        <li>@Html.ActionLink("Admin", "Index", "Admin")</li>
+                        <li role="presentation" class="dropdown" style="display:flex;">
+                            <a style="display:flex;" class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <div style="flex:1 1 auto; text-align:right;">
+                                    Admin
+                                    <span class="caret"></span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Lab Manager", "Index", "Admin")</li>
+                                <li>@Html.ActionLink("Site Errors", "Index", "ErrorLog")</li>
+                            </ul>
+                        </li>
                     }
                     @if (User.IsInRole(CustomRoles.LabUser))
                     {

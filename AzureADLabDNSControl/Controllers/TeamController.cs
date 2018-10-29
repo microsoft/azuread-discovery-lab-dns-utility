@@ -1,7 +1,8 @@
-﻿using AzureADLabDNSControl.Infra;
-using AzureADLabDNSControl.Models;
-using Graph;
-using Infra;
+﻿using Graph;
+using Lab.Common;
+using Lab.Common.Infra;
+using Lab.Common.Repo;
+using Lab.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

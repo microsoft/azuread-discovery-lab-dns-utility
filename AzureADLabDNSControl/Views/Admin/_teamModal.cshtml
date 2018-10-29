@@ -1,0 +1,48 @@
+﻿
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="TeamModalLabel" aria-hidden="true" id="EditTeam">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="TeamModalLabel">Team/Domain Resets</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-5">
+                        <label>Action</label>
+                    </div>
+                    <div class="col-sm-7">
+                        <label>Results</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5">
+                        <button type="button" class="btn btn-warning btn-sm" id="btnResetTeamAuth">Reset Team Auth</button>
+                    </div>
+                    <div class="col-sm-7">
+                        <div id="resetTeamAuthRes" class="resetResults"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5">
+                        <button type="button" class="btn btn-warning btn-sm" id="btnResetTxtRecord">Reset TXT Record</button>
+                    </div>
+                    <div class="col-sm-7">
+                        <div id="resetTxtRecordRes" class="resetResults"></div>
+                    </div>
+                </div>
+                <div class="row" id="divShowRemoveDomain">
+                    <div class="col-sm-5">
+                        <button type="button" class="btn btn-warning btn-sm" id="btnRemoveDomain">Remove Domain from Tenant</button>
+                    </div>
+                    <div class="col-sm-7">
+                        <div id="removeDomainRes" class="resetResults"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

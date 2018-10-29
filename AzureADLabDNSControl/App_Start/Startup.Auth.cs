@@ -10,31 +10,17 @@ using System.Web.Mvc;
 using System.Configuration;
 using System.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens;
-using Infra;
 using System.Web;
 using System.Linq;
 using System.Security.Claims;
-using AzureADLabDNSControl.Infra;
 using Graph;
+using Lab.Common;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace AzureADLabDNSControl
 {
     public partial class Startup
     {
-        private static string aadInstance = EnsureTrailingSlash(ConfigurationManager.AppSettings["ida:AADInstance"]);
-
-        public static string LabAdminClientId = ConfigurationManager.AppSettings["ida:ClientId"];
-        public static string LabAdminSecret = ConfigurationManager.AppSettings["ida:ClientSecret"];
-        public static string LabAdminTenantId = ConfigurationManager.AppSettings["ida:TenantId"];
-        public static string Authority = "https://login.microsoftonline.com/{0}";
-        public static string adminAuthority = String.Format(Authority, LabAdminTenantId);
-
-        public static string LabUserClientId = ConfigurationManager.AppSettings["LinkAdminClientId"];
-        public static string LabUserSecret = ConfigurationManager.AppSettings["LinkAdminSecret"];
-        public static string userAuthority = String.Format(Authority, "common");
-
-        public static string GraphResource = "https://graph.microsoft.com";
-
         public void ConfigureAuth(IAppBuilder app)
         {
             app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
@@ -65,8 +51,8 @@ namespace AzureADLabDNSControl
 
             OpenIdConnectAuthenticationOptions LabAdminOptions = new OpenIdConnectAuthenticationOptions
             {
-                ClientId = LabAdminClientId,
-                Authority = adminAuthority,
+                ClientId = Settings.LabAdminClientId,
+                Authority = Settings.AdminAuthority,
                 PostLogoutRedirectUri = "/",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
@@ -88,8 +74,8 @@ namespace AzureADLabDNSControl
 
             OpenIdConnectAuthenticationOptions LabUserOptions = new OpenIdConnectAuthenticationOptions
             {
-                ClientId = LabUserClientId,
-                Authority = userAuthority,
+                ClientId = Settings.LabUserClientId,
+                Authority = Settings.UserAuthority,
                 PostLogoutRedirectUri = "/",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {

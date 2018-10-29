@@ -9,6 +9,9 @@
     $("#btnAddLab").on("click", function () {
         loadLabForm();
     });
+    $("#EditLab").on("shown.bs.modal", function () {
+        $("#City").focus();
+    });
     $("#btnEditLab").on("click", function () {
         var data = $("#labDetails").data("data");
         loadLabForm(data);
@@ -21,7 +24,7 @@
         $("#labList li").removeClass("active");
         $(this).addClass("active");
         var id = $(this).data("id");
-        getLab(id);
+        getLab(id, $(this));
     });
     $("#btnSaveLab").on("click", saveLab);
     $("#btnDeleteLab").on("click", deleteLab);
@@ -134,17 +137,11 @@
             setDetail(res.Settings);
         }, "POST");
     }
-    var last_response_len = 0;
-
     function deleteLab() {
         if (!confirm("Are you sure you want to delete this lab?"))
             return;
 
         var data = $("#labDetails").data("data");
-
-        last_response_len = 0;
-        $(".ui-loader2").css("visibility", "visible");
-        $("div.modal-footer div.col-sm-7 button").attr("disabled", "disabled");
 
         $.ajax({
             url: "/api/Lab/DeleteLab/" + data.id,
@@ -152,16 +149,9 @@
             type: "POST",
             withCredentials: true,
             contentType: "application/json",
-            xhrFields: {
-                onprogress: setProg
-            },
             success: function (res, status, xhr) {
                 $("#EditLab").modal('hide');
                 location.href = location.href;
-            },
-            complete: function () {
-                $(".ui-loader2").css("visibility", "hidden");
-                $("div.modal-footer div.col-sm-7 button").removeAttr("disabled");
             }
         });
     }
@@ -174,58 +164,29 @@
                 "primaryInstructor": $("#Instructor").val(),
                 "labDate": $("#LabDate").val(),
                 "city": $("#City").val(),
+                "dnsZoneRg": $("#DomainGroup").val(),
+                "attendeeCount": $("#AttendeeCount").val()
             }
         } else {
             data = $("#labDetails").data("data");
             data.primaryInstructor = $("#Instructor").val();
             data.labDate = $("#LabDate").val();
             data.city = $("#City").val();
+            data.attendeeCount = $("#AttendeeCount").val();
         }
 
         data.instructors = $('#Instructors').tokenfield('getTokensList', ',', false, false).split(",");
-        last_response_len = 0;
-        $(".ui-loader2").css("visibility", "visible");
-        $("div.modal-footer div.col-sm-7 button").attr("disabled", "disabled");
         $.ajax({
             url: "/api/Lab/" + action,
             data: JSON.stringify(data),
             type: "POST",
             withCredentials: true,
             contentType: "application/json",
-            xhrFields: {
-                onprogress: setProg
-            },
             success: function (res, status, xhr) {
                 $("#EditLab").modal('hide');
                 location.href = location.href;
-            },
-            complete: function () {
-                $(".ui-loader2").css("visibility", "hidden");
-                $("div.modal-footer div.col-sm-7 button").removeAttr("disabled");
             }
         });
-    }
-    function getData(response) {
-        var this_response;
-        if (last_response_len == 0) {
-            this_response = response;
-            last_response_len = response.length;
-        }
-        else {
-            this_response = response.substring(last_response_len);
-            last_response_len = response.length;
-        }
-        var data = JSON.parse(this_response);
-        return data;
-    }
-    function setProg(e) {
-        var data = getData(e.currentTarget.response);
-        $("div.ui-loader2 div.msg").html(data.Update);
-        var prog = parseInt((data.ActivitiesCompleted / data.TotalActivities) * 100);
-        $("div.progress div.progress-bar")
-            .css("width", prog + "%")
-            .attr("aria-valuenow", prog);
-        $("span.barcontent").html(prog + "%");
     }
     function loadLabForm(data) {
         $("#LabModalLabel").html((data == null) ? "Add Lab" : "Edit Lab");
@@ -246,12 +207,19 @@
             loadLabList(res);
         });
     }
-    function getLab(id) {
-        SiteUtil.AjaxCall("/api/Lab/GetLab/" + id, null, function (res) {
-            setDetail(res);
-        });
+    function getLab(id, listObject) {
+        SiteUtil.AjaxCall("/api/Lab/GetLab/" + id, null,
+            function (res) {
+                if (res == null) {
+                    //lab was deleted
+                    SiteUtil.ShowMessage("That lab has been deleted - removing from list", "Deleted", SiteUtil.AlertImages.warning);
+                    listObject.remove();
+                }
+                setDetail(res, listObject);
+            }
+        );
     }
-    function setDetail(data) {
+    function setDetail(data, listObject) {
         if (data == null || typeof (data) == "undefined") {
             $("#labDetails").data("data", null).css("display", "none");
             $("#labDetailsInfo").css("display", "block");
@@ -263,6 +231,16 @@
         $("#labLabDate").html((data == null) ? "" : SiteUtil.GetShortDate(data.labDate));
         $("#labCity").html((data == null) ? "" : data.city);
         $("#labLabCode").html((data == null) ? "" : data.labCode);
+        $("#labEstimatedAttendees").html((data == null) ? "" : data.attendeeCount);
+        $("#labDomGroup").html((data == null) ? "" : data.dnsZoneRg);
+        var state = (data == null) ? "" : getState(data.state, data.domAssignments.length, data.attendeeCount);
+        if (state == "READY") {
+            listObject.children("a").html(getNavLabel(data));
+            if ($("#labList li").length == 0) {
+                setEmptyLabList();
+            }
+        }
+        $("#labState").html(state);
         $("#labInstructors").html((data == null) ? "" : data.instructors.join(", "));
         $("#labTeamList tr:not(:first-child)").remove();
 
@@ -281,6 +259,28 @@
         }
     }
 
+    function getState(state, numCreated, totalAssigned) {
+        var res = "";
+        switch (state) {
+            case 0:
+                res = "Creating";
+                if (numCreated != null) {
+                    res += " (" + (numCreated + "/" + totalAssigned + ")...");
+                }
+                break;
+            case 1:
+                res = "READY";
+                break;
+            case 2:
+                res = "Deleting";
+                if (numCreated != null) {
+                    res += " (" + ((totalAssigned - numCreated) + "/" + totalAssigned + ")...");
+                }
+                break;
+        }
+        return res;
+    }
+
     function checkLabDate(labDate, callback) {
         SiteUtil.AjaxCall("/api/Lab/CheckLabDate", labDate, function (res) {
             callback(res);
@@ -291,10 +291,23 @@
             callback(res);
         });
     }
+    function getNavLabel(item) {
+        var city = SiteUtil.GetShortDate(item.labDate) + ": " + item.city;
+        if (item.state != 1) {
+            var state = getState(item.state)
+            if (state) {
+                city += " (" + state + "...)";
+            };
+        }
+        return city;
+    }
+    function setEmptyLabList() {
+        $("<li/>").addClass("info").attr("role", "presentation").html("No labs currently assigned").appendTo("#labList");
+    }
     function loadLabList(res) {
         $("#labList li").remove();
         if (res.length == 0) {
-            $("<li/>").addClass("info").attr("role", "presentation").html("No labs currently assigned").appendTo("#labList");
+            setEmptyLabList();
             return;
         }
         for (var x = 0; x < res.length; x++) {
@@ -302,8 +315,9 @@
                 .data("id", res[x].id)
                 .attr("role", "presentation")
                 .appendTo("#labList");
+            var city = getNavLabel(res[x]);
             $("<a/>")
-                .html(SiteUtil.GetShortDate(res[x].labDate) + ": " + res[x].city)
+                .html(city)
                 .css("backgroundColor", (res[x].primaryInstructor == me) ? "rgba(246, 254, 246, 1)" : "aliceblue")
                 .appendTo(li);
         }

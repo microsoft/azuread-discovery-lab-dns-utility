@@ -1,6 +1,4 @@
-﻿using AzureADLabDNSControl.Models;
-using Infra;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +6,8 @@ using System.Web;
 using System.Web.Mvc;
 using Graph;
 using System.Security.Principal;
-using AzureADLabDNSControl.Infra;
+using Lab.Common;
+using Lab.Common.Repo;
 
 namespace AzureADLabDNSControl.Controllers
 {

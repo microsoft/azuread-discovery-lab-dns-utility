@@ -4,10 +4,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
-using AzureADLabDNSControl.Infra;
 using Graph;
-using Infra;
+using Lab.Common;
+using Lab.Common.Infra;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.Notifications;
+using Microsoft.Owin.Security.OpenIdConnect;
 
 namespace AzureADLabDNSControl
 {
@@ -18,23 +20,28 @@ namespace AzureADLabDNSControl
             var hctx =
                 (HttpContextWrapper)
                     ctx.OwinContext.Environment.Single(e => e.Key == "System.Web.HttpContextBase").Value;
+            await AuthInit(hctx, ctx.Identity);
+        }
 
-            var aud = ctx.Identity.GetClaim("aud");
-            if (aud == LabUserClientId)
+        internal static async Task AuthInit(HttpContextWrapper hctx, ClaimsIdentity identity)
+        {
+
+            var aud = identity.GetClaim("aud");
+            if (aud == Settings.LabUserClientId)
             {
-                ctx.Identity.AddClaim(new Claim(CustomClaimTypes.AuthType, CustomAuthType.LabUser));
-                ctx.Identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUser));
+                identity.AddClaim(new Claim(CustomClaimTypes.AuthType, CustomAuthType.LabUser));
+                identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUser));
 
                 //call Graph to get additional custom claims
-                var tenantId = AdalLib.GetUserTenantId(ctx.Identity);
-                var oid = ctx.Identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
+                var tenantId = AdalLib.GetUserTenantId(identity);
+                var oid = identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
                 var control = await AADLinkControl.CreateAsync(tenantId, hctx);
                 var codes = await control.GetCodes(oid);
-                ctx.Identity.AddClaim(new Claim(CustomClaimTypes.LabCode, codes.labCode));
-                ctx.Identity.AddClaim(new Claim(CustomClaimTypes.TeamCode, codes.teamCode));
+                identity.AddClaim(new Claim(CustomClaimTypes.LabCode, codes.labCode));
+                identity.AddClaim(new Claim(CustomClaimTypes.TeamCode, codes.teamCode));
                 if (codes.teamCode != null)
                 {
-                    ctx.Identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUserAssigned));
+                    identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUserAssigned));
                 }
 
                 //add these to session too
@@ -42,10 +49,10 @@ namespace AzureADLabDNSControl
                 hctx.Session["teamCode"] = codes.teamCode;
 
             }
-            else if (aud == LabAdminClientId)
+            else if (aud == Settings.LabAdminClientId)
             {
-                ctx.Identity.AddClaim(new Claim(CustomClaimTypes.AuthType, CustomAuthType.LabAdmin));
-                ctx.Identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabAdmin));
+                identity.AddClaim(new Claim(CustomClaimTypes.AuthType, CustomAuthType.LabAdmin));
+                identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabAdmin));
             }
         }
     }

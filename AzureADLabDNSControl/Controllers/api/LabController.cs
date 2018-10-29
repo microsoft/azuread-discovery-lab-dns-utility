@@ -1,6 +1,8 @@
-﻿using AzureADLabDNSControl.Infra;
-using AzureADLabDNSControl.Models;
-using Infra;
+﻿using Lab.Common;
+using Lab.Common.Infra;
+using Lab.Common.Repo;
+using Lab.Data.Models;
+using Lab.Infra;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,85 +21,34 @@ namespace AzureADLabDNSControl.Controllers.api
     {
         //Lab Operations
         [HttpPost]
-        public HttpResponseMessage AddLab(LabSettings lab)
+        public async Task<IEnumerable<LabDTO>> AddLab(LabSettings lab)
         {
-            IEnumerable<LabSettings> res = new List<LabSettings>();
-            var response = Request.CreateResponse();
-            response.Content = new PushStreamContent(
-                async(outputStream, httpContent, transportContext) =>
-                {
-                    try
-                    {
-                        var labrepo = new LabRepo(outputStream);
-                        labrepo.LabActivity += Labrepo_LabActivity;
-
-                        res = await labrepo.AddNewLab(lab, Settings.DomainList.ToArray());
-                    }
-                    catch (HttpException ex)
-                    {
-                        if (ex.ErrorCode == -2147023667)
-                        {
-                            return;
-                        }
-                    }
-                    finally
-                    {
-                        var str = JsonConvert.SerializeObject(res);
-                        var buffer = Encoding.UTF8.GetBytes(str);
-                        await outputStream.WriteAsync(buffer, 0, buffer.Length);
-                        outputStream.Close();
-                    }
-                }
-            );
-            return response;
+            var res = await LabRepo.AddNewLab(lab, User.Identity.Name);
+            SetQueue(lab.Id, "AddLab");
+            return MapLabs(res);
         }
 
         [HttpPost]
-        public HttpResponseMessage DeleteLab(string id)
+        public async Task<IEnumerable<LabDTO>> DeleteLab(string id)
         {
-            IEnumerable<LabSettings> res = new List<LabSettings>();
-            var response = Request.CreateResponse();
-            response.Content = new PushStreamContent(
-                async (outputStream, httpContent, transportContext) =>
-                {
-                    try
-                    {
-                        var labrepo = new LabRepo(outputStream);
-                        labrepo.LabActivity += Labrepo_LabActivity;
-
-                        res = await labrepo.RemoveLab(id, User.Identity.Name);
-                    }
-                    catch (HttpException ex)
-                    {
-                        if (ex.ErrorCode == -2147023667)
-                        {
-                            return;
-                        }
-                    }
-                    finally
-                    {
-                        var str = JsonConvert.SerializeObject(res);
-                        var buffer = Encoding.UTF8.GetBytes(str);
-                        await outputStream.WriteAsync(buffer, 0, buffer.Length);
-                        outputStream.Close();
-                    }
-                }
-            );
-            return response;
+            var res = await LabRepo.RemoveLab(id, User.Identity.Name);
+            SetQueue(id, "RemoveLab");
+            return MapLabs(res);
         }
 
-        private void Labrepo_LabActivity(object sender, LabActivityArgs e)
+        private void SetQueue(string id, string operation)
         {
-            var res = new
+            var cli = LabQueue.GetQueueClient();
+            var queue = LabQueue.GetQueue(cli, Settings.LabQueueName);
+            var msg = new LabQueueDTO
             {
-                e.Update,
-                e.TotalActivities,
-                e.ActivitiesCompleted
+                LabId = id,
+                Operation = operation,
+                UserName = User.Identity.Name
             };
-            
-            var str = JsonConvert.SerializeObject(res);
-            var buffer = Encoding.UTF8.GetBytes(str);
-            e.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+
+            var message = JsonConvert.SerializeObject(msg);
+            LabQueue.AddMessage(queue, message);
         }
 
         public async Task<bool> CheckLabDate([FromUri] DateTime labDate)
@@ -118,9 +69,9 @@ namespace AzureADLabDNSControl.Controllers.api
             return res;
         }
 
-        public async Task<LabSettings> GetLab(string id)
+        public async Task<LabSettingsFull> GetLab(string id)
         {
-            var res = await LabRepo.GetLab(id);
+            var res = await LabRepo.GetLabAndSettings(id);
             return res;
         }
 
@@ -145,7 +96,8 @@ namespace AzureADLabDNSControl.Controllers.api
                 City = l.City,
                 Id = l.Id,
                 LabDate = l.LabDate,
-                PrimaryInstructor = l.PrimaryInstructor
+                PrimaryInstructor = l.PrimaryInstructor,
+                State = l.State
             });
         }
 
@@ -170,80 +122,6 @@ namespace AzureADLabDNSControl.Controllers.api
             {
                 res.ResponseMessage = "ERROR: " + ex.Message;
             }
-            return res;
-        }
-
-        [HttpPost]
-        public async Task<LabSettingsDTO> UnlinkAllDomains(TeamDTO team)
-        {
-            var res = new LabSettingsDTO();
-            var responseMessage = new StringBuilder();
-            try
-            {
-                AADLinkControl control = null;
-                foreach(var teamAssignment in team.Lab.DomAssignments)
-                {
-                    responseMessage.AppendLine(string.Format("Resetting {0}...", teamAssignment.DomainName));
-                    //detach domain from tenant
-                    control = await AADLinkControl.CreateAsync(teamAssignment.AssignedTenantId, new HttpContextWrapper(HttpContext.Current));
-                    var adalResponse = await control.DeleteDomain(teamAssignment.DomainName);
-                    responseMessage.AppendLine(string.Format("    Domain operation {0}, message: {1}", ((adalResponse.Successful) ? "successful" : "failed"), adalResponse.Message));
-                    teamAssignment.AssignedTenantId = null;
-
-                    //reset TXT records
-                    using (var dns = new DnsAdmin())
-                    {
-                        await dns.ClearTxtRecord(team.TeamAssignment.DomainName);
-                    }
-                    //update record in Cosmos
-                    teamAssignment.DnsTxtRecord = null;
-                }
-                var upd = await LabRepo.UpdateLab(team.Lab, User.Identity.Name);
-                res.Settings = upd.Single(l => l.Id == team.Lab.Id);
-            }
-            catch (Exception ex)
-            {
-                responseMessage.AppendLine("ERROR: " + ex.Message);
-            }
-            finally
-            {
-                res.ResponseMessage = responseMessage.ToString();
-                res.Settings = await LabRepo.GetLab(team.Lab.Id);
-            }
-
-            return res;
-        }
-
-
-        [HttpPost]
-        public async Task<LabSettingsDTO> DeleteAllLabDomains(TeamDTO team)
-        {
-            var res = new LabSettingsDTO();
-            var responseMessage = new StringBuilder();
-            try
-            {
-                foreach (var teamAssignment in team.Lab.DomAssignments)
-                {
-                    responseMessage.AppendLine(string.Format("Deleting {0}...", teamAssignment.DomainName));
-                    //reset TXT records
-                    using (var dns = new DnsAdmin())
-                    {
-                        await dns.RemoveChildZone(team.TeamAssignment.ParentZone, team.TeamAssignment.TeamName, team.TeamAssignment.DomainName);
-                    }
-                }
-
-                res.Settings = team.Lab;
-            }
-            catch (Exception ex)
-            {
-                responseMessage.AppendLine("ERROR: " + ex.Message);
-            }
-            finally
-            {
-                res.ResponseMessage = responseMessage.ToString();
-                res.Settings = await LabRepo.GetLab(team.Lab.Id);
-            }
-
             return res;
         }
 
