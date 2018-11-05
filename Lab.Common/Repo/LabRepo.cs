@@ -20,7 +20,8 @@ namespace Lab.Common.Repo
             {
                 lab.LabCode = LabSettings.GenLabCode();
                 lab.CreateDate = DateTime.UtcNow;
-                lab.State = LabState.Creating;
+                lab.State = LabState.Queued;
+
                 //setting this in AdminController:Index
                 var arr = lab.DnsZoneRG.Split(':');
                 lab.AzureSubscriptionId = arr[0];
@@ -141,7 +142,7 @@ namespace Lab.Common.Repo
             try
             {
                 var lab = await GetLab(labId);
-                lab.State = LabState.Deleting;
+                lab.State = LabState.QueuedToDelete;
                 await DocDBRepo.DB<LabSettings>.UpdateItemAsync(lab);
 
                 return await GetLabs(instructor);
@@ -191,6 +192,7 @@ namespace Lab.Common.Repo
             var res = await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.PrimaryInstructor == instructor || d.Instructors.Contains(instructor));
             return res.OrderBy(l => l.LabDate).ToList();
         }
+
         public static async Task<IEnumerable<DateTime>> GetLabDates()
         {
             var res = (await DocDBRepo.DB<LabSettings>.GetItemsAsync()).OrderBy(l => l.LabDate).Select(l => l.LabDate).ToList();
@@ -226,18 +228,35 @@ namespace Lab.Common.Repo
             return res;
         }
 
-        public static async Task ResetTeamCode(TeamDTO data)
+        public static async Task<DomAssignment> UpdateTeamAssignment(DomAssignment teamAssignment)
+        {
+            var res = await DocDBRepo.DB<DomAssignment>.UpdateItemAsync(teamAssignment);
+            return res;
+        }
+
+        public static async Task<TeamDTO> ResetTeamCode(TeamDTO data)
         {
             var newCode = DomAssignment.GenAuthCode(data.TeamAssignment.TeamName);
-            await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "teamAuth", newCode);
+            var res = await GetDomAssignment(data.Lab.LabCode, data.TeamAssignment.TeamAuth);
+            res.TeamAssignment.TeamAuth = newCode;
+            res.TeamAssignment = await UpdateTeamAssignment(res.TeamAssignment);
+            return res;
         }
-        public static async Task UpdateTenantId(TeamDTO data, string tenantId)
+
+        public static async Task<TeamDTO> UpdateTenantId(TeamDTO data, string tenantId)
         {
-            await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "assignedTenantId", tenantId);
+            var res = await GetDomAssignment(data.Lab.LabCode, data.TeamAssignment.TeamAuth);
+            res.TeamAssignment.AssignedTenantId = tenantId;
+            res.TeamAssignment = await UpdateTeamAssignment(res.TeamAssignment);
+            return res;
         }
-        public static async Task UpdateDnsRecord(TeamDTO data)
+
+        public static async Task<TeamDTO> UpdateDnsRecord(TeamDTO data)
         {
-            var lab = await DocDBRepo.DB<LabSettings>.UpdateTeamParms(data.Lab.Id, data.TeamAssignment.TeamAuth, "dnsTxtRecord", data.TeamAssignment.DnsTxtRecord);
+            var res = await GetDomAssignment(data.Lab.LabCode, data.TeamAssignment.TeamAuth);
+            res.TeamAssignment.DnsTxtRecord = data.TeamAssignment.DnsTxtRecord;
+            res.TeamAssignment = await UpdateTeamAssignment(res.TeamAssignment);
+            return res;
         }
 
         #endregion

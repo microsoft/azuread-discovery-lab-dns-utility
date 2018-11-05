@@ -154,7 +154,7 @@ var SiteUtil = function () {
                 return false;
             }
         };
-        if (options.callback !== null) {
+        if (typeof(options.callback) != "undefined") {
             if (options.callback.length > 0) {
                 options.body += "<br><textarea rows='3' cols='50' style='margin-top:5px; max-width:inherit;' id='nDialogVal' class='form-control' size='20'></textarea>";
             }
@@ -263,7 +263,7 @@ var SiteUtil = function () {
                 }
                 if (callback) callback(res, xhr);
             },
-            failure: function (res) {
+            error: function (res) {
                 if (failCallback)
                     failCallback(res);
             }
@@ -426,7 +426,18 @@ var SiteUtil = function () {
         $("<div/>").addClass("progress-bar").css("width", (progress / 100)).attr({ "aria-valuenow": progress, "aria-valuemax": 100 }).html(progress + "%").appendTo(bar);
         return res.html();
     }
+    function _setHelp(obj, title, message) {
+        var sp = $("<span/>").html("*").attr("title","Click for help").css({ "cursor": "pointer", "display": "inline-block", "padding": "3px", "color": "red" }).on("click", function () {
+            _showModal({
+                title: "Help - " + title,
+                body: message
+            });
+        });
+        $(obj).append(sp);
+    }
+
     return {
+        SetHelp: _setHelp,
         GetProgBar: _getProgBar,
         Highlight: highlight,
         Copy: copyToClipboard,

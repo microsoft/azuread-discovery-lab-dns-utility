@@ -24,7 +24,7 @@ namespace AzureADLabDNSControl.Controllers.api
         public async Task<IEnumerable<LabDTO>> AddLab(LabSettings lab)
         {
             var res = await LabRepo.AddNewLab(lab, User.Identity.Name);
-            SetQueue(lab.Id, "AddLab");
+            SetQueue(lab.Id);
             return MapLabs(res);
         }
 
@@ -32,18 +32,17 @@ namespace AzureADLabDNSControl.Controllers.api
         public async Task<IEnumerable<LabDTO>> DeleteLab(string id)
         {
             var res = await LabRepo.RemoveLab(id, User.Identity.Name);
-            SetQueue(id, "RemoveLab");
+            SetQueue(id);
             return MapLabs(res);
         }
 
-        private void SetQueue(string id, string operation)
+        private void SetQueue(string id)
         {
             var cli = LabQueue.GetQueueClient();
             var queue = LabQueue.GetQueue(cli, Settings.LabQueueName);
             var msg = new LabQueueDTO
             {
                 LabId = id,
-                Operation = operation,
                 UserName = User.Identity.Name
             };
 
@@ -146,7 +145,12 @@ namespace AzureADLabDNSControl.Controllers.api
                 }
 
                 res.ResponseMessage += string.Format("Domain operation {0}, message: {1}", ((adalResponse.Successful) ? "successful" : "failed"), adalResponse.Message);
-                res.Settings = await LabRepo.GetLab(team.Lab.Id);
+                res.Settings = await LabRepo.GetLabAndSettings(team.Lab.Id);
+                if (adalResponse.Message != "ObjectInUse" && adalResponse.Successful)
+                {
+                    var res2 = await ResetTxtAssignment(team);
+                    res.Settings = res2.Settings;
+                }
             }
             catch (Exception ex)
             {
@@ -166,7 +170,7 @@ namespace AzureADLabDNSControl.Controllers.api
                 var adalResponse = await control.DeleteObject(team.DelObjId);
 
                 res.ResponseMessage += string.Format("Delete operation {0}, message: {1}", ((adalResponse.Successful) ? "successful" : "failed"), adalResponse.Message);
-                res.Settings = await LabRepo.GetLab(team.Lab.Id);
+                res.Settings = await LabRepo.GetLabAndSettings(team.Lab.Id);
             }
             catch (Exception ex)
             {
@@ -186,15 +190,22 @@ namespace AzureADLabDNSControl.Controllers.api
             var res = new LabSettingsDTO();
             try
             {
+                var data = await LabRepo.GetDomAssignment(team.Lab.LabCode, team.TeamAssignment.TeamAuth);
+
                 //remove zone record from zone
                 using (var dns = new DnsAdmin())
                 {
+                    var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
+                    await dns.InitAsync(domGroup);
+
                     await dns.ClearTxtRecord(team.TeamAssignment.DomainName);
                 }
                 //update record in Cosmos
-                await LabRepo.UpdateDnsRecord(team);
+                var assignment = await LabRepo.GetDomAssignment(team.Lab.LabCode, team.TeamAssignment.TeamAuth);
+                assignment.TeamAssignment.DnsTxtRecord = null;
+                await LabRepo.UpdateTeamAssignment(assignment.TeamAssignment);
                 res.ResponseMessage = "TXT record reset";
-                res.Settings = await LabRepo.GetLab(team.Lab.Id);
+                res.Settings = await LabRepo.GetLabAndSettings(team.Lab.Id);
             }
             catch (Exception ex)
             {
@@ -216,8 +227,10 @@ namespace AzureADLabDNSControl.Controllers.api
             try
             {
                 //update record in Cosmos
-                await LabRepo.ResetTeamCode(team);
-                res.Settings = await LabRepo.GetLab(team.Lab.Id);
+                var assignment = await LabRepo.ResetTeamCode(team);
+                
+                res.Settings = await LabRepo.GetLabAndSettings(team.Lab.Id);
+                res.ResponseMessage = assignment.TeamAssignment.TeamAuth;
             }
             catch (Exception ex)
             {

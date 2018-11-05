@@ -10,6 +10,9 @@ namespace Lab.Data.Helper
     {
         Creating,
         Ready,
-        Deleting
+        Deleting,
+        Queued,
+        Error,
+        QueuedToDelete
     }
 }

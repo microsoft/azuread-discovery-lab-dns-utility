@@ -1,10 +1,8 @@
 ﻿@using Lab.Data.Models
-@model LabSettings
+@model LabSettingsFull
 @{
-                /**/
-
-                ViewBag.Title = "LabReport";
-                var i = 0;
+    ViewBag.Title = "LabReport";
+    var i = 0;
 }
 
 <h2>Lab Report</h2>
@@ -84,7 +82,7 @@ On each of the following pages, please cut between each "Domain" section and han
             }
         }
         div.instructions {
-            margin-bottom:75px;
+            margin-bottom:60px;
         }
         .code {
             font-family: Courier New, Courier, Consolas, monospace;
@@ -94,11 +92,11 @@ On each of the following pages, please cut between each "Domain" section and han
 
         div.col-sm-3 {
             font-weight: bold;
-            font-size: 1.4em;
+            font-size: 1.3em;
         }
 
         div.col-sm-9 {
-            font-size: 1.4em;
+            font-size: 1.3em;
         }
     </style>
 }

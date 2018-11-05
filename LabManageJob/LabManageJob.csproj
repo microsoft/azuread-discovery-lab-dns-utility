@@ -244,6 +244,7 @@
     <None Include="packages.config" />
     <None Include="settings.config">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

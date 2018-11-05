@@ -20,6 +20,8 @@
         var id = $("#labDetails").data("data").id;
         location.href = "/Admin/LabReport/" + id;
     });
+    SiteUtil.SetHelp("#domGroupHelp", "Domain Group", "Select from a list of resource groups containing domain(s) to use for your lab.");
+
     $("#labList").on("click", "li:not(.info)", function () {
         $("#labList li").removeClass("active");
         $(this).addClass("active");
@@ -42,8 +44,9 @@
         $("#EditTeam").data("teamData", team);
         $("#TeamModalLabel").html(team.domainName + " - Team/Domain Resets");
         $("#resetTeamAuthRes").html(team.teamAuth);
-        $("#resetTxtRecordRes").html(team.dnsTxtRecord || "not assigned");
+        $("#resetTxtRecordRes").html(team.dnsTxtRecord || "(Not assigned)");
         if (team.assignedTenantId) {
+            $("#removeDomainRes").html("Checking domain status...");
             $("#divShowRemoveDomain").show();
             checkDomain(team, function (res) {
                 if (res.ResponseMessage.indexOf("Domain operation failed") > -1) {
@@ -75,7 +78,7 @@
             "TeamAssignment": dom
         }
         SiteUtil.AjaxCall("/api/Lab/ResetTeamCode", JSON.stringify(teamDto), function (res) {
-            SiteUtil.ShowMessage(res.ResponseMessage, "Reset Result", SiteUtil.AlertImages.info);
+            $("#EditTeam").data("teamData").teamAuth = res.ResponseMessage;
             $("#resetTeamAuthRes").html(res.ResponseMessage);
             setDetail(res.Settings);
         }, "POST");
@@ -91,8 +94,8 @@
             "TeamAssignment": dom
         }
         SiteUtil.AjaxCall("/api/Lab/ResetTxtAssignment", JSON.stringify(teamDto), function (res) {
-            SiteUtil.ShowMessage(res.ResponseMessage, "Reset Result", SiteUtil.AlertImages.info);
-            $("#resetTxtRecordRes").html(res.ResponseMessage);
+            $("#EditTeam").data("teamData").dnsTxtRecord = null;
+            $("#resetTxtRecordRes").html("(Not assigned)");
             setDetail(res.Settings);
         }, "POST");
     }
@@ -118,6 +121,8 @@
         SiteUtil.AjaxCall("/api/Lab/UnlinkDomain", JSON.stringify(teamDto), function (res) {
             SiteUtil.ShowMessage(res.ResponseMessage, "Reset Result", SiteUtil.AlertImages.info);
             if (res.ResponseMessage.substring(0, 5) != "ERROR") {
+                $("#EditTeam").data("teamData").dnsTxtRecord = null;
+                $("#resetTxtRecordRes").html("(Not assigned)");
                 $("#removeDomainRes").html(res.ResponseMessage);
                 setDetail(res.Settings);
             }
@@ -214,6 +219,9 @@
                     //lab was deleted
                     SiteUtil.ShowMessage("That lab has been deleted - removing from list", "Deleted", SiteUtil.AlertImages.warning);
                     listObject.remove();
+                    if ($("#labList li").length == 0) {
+                        setEmptyLabList();
+                    }
                 }
                 setDetail(res, listObject);
             }
@@ -235,7 +243,9 @@
         $("#labDomGroup").html((data == null) ? "" : data.dnsZoneRg);
         var state = (data == null) ? "" : getState(data.state, data.domAssignments.length, data.attendeeCount);
         if (state == "READY") {
-            listObject.children("a").html(getNavLabel(data));
+            if (listObject)
+                listObject.children("a").html(getNavLabel(data));
+
             if ($("#labList li").length == 0) {
                 setEmptyLabList();
             }
@@ -252,7 +262,7 @@
             $("<td/>").html(data.domAssignments[x].dnsTxtRecord || "(not assigned)").appendTo(tr);
             $("<td/>").html(data.domAssignments[x].assignedTenantId || "(not assigned)").appendTo(tr);
             tr.addClass("teamRow")
-                .attr("title", "Click to reset the Team Auth and TXT Records")
+                .attr("title", "Click to reset the Team Auth or TXT Records")
                 .data("data", data.domAssignments[x])
                 .on("click", editAssignment)
                 .appendTo("#labTeamList");
@@ -273,6 +283,24 @@
                 break;
             case 2:
                 res = "Deleting";
+                if (numCreated != null) {
+                    res += " (" + ((totalAssigned - numCreated) + "/" + totalAssigned + ")...");
+                }
+                break;
+            case 3:
+                res = "Queued";
+                if (numCreated != null) {
+                    res += " (" + (numCreated + "/" + totalAssigned + ")...");
+                }
+                break;
+            case 4:
+                res = "Error";
+                if (numCreated != null) {
+                    res += " (" + (numCreated + "/" + totalAssigned + ")...");
+                }
+                break;
+            case 5:
+                res = "Pending Delete";
                 if (numCreated != null) {
                     res += " (" + ((totalAssigned - numCreated) + "/" + totalAssigned + ")...");
                 }

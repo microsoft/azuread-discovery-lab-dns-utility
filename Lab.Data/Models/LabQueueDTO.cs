@@ -12,9 +12,6 @@ namespace Lab.Data.Models
         [JsonProperty("labId")]
         public string LabId { get; set; }
 
-        [JsonProperty("operation")]
-        public string Operation { get; set; }
-
         [JsonProperty("userName")]
         public string UserName { get; set; }
     }

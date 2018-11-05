@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace DocDBLib
 {
@@ -60,15 +61,17 @@ namespace DocDBLib
                 item.DocType = typeof(T).Name;
                 item.Id = Guid.NewGuid().ToString();
                 var res = await client.CreateDocumentAsync(baseDocCollectionUri, item);
-                return item;
+                var doc = JsonConvert.DeserializeObject<T>(res.Resource.ToString());
+                return doc;
             }
 
             public static async Task<T> UpdateItemAsync(T item)
             {
                 item.DocType = typeof(T).Name;
                 var id = item.Id;
-                await client.ReplaceDocumentAsync(UriFactory.CreateDocumentUri(Settings.DocDBName, Settings.DocDBCollection, id), item);
-                return item;
+                var res = await client.ReplaceDocumentAsync(UriFactory.CreateDocumentUri(Settings.DocDBName, Settings.DocDBCollection, id), item);
+                var doc = JsonConvert.DeserializeObject<T>(res.Resource.ToString());
+                return doc;
             }
 
             public static async Task<dynamic> DeleteItemAsync(T item)

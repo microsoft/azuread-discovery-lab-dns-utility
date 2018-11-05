@@ -7,7 +7,7 @@ namespace Lab.Data.Models
 {
     public class LabSettingsDTO
     {
-        public LabSettings Settings { get; set; }
+        public LabSettingsFull Settings { get; set; }
 
         public string ResponseMessage { get; set; }
         public dynamic Object { get; set; }

@@ -1,8 +1,2 @@
-﻿@{  Layout = null; }<script type="text/javascript">
-    debugger;
-    var tzo = new Date().getTimezoneOffset();
-    var res = "tzo=" + escape(tzo);
-    document.cookie = res;
-    location.href = "/";
-</script>
-
+﻿@{  Layout = null; }
+<script type="text/javascript">document.cookie = "tzo=" + escape(new Date().getTimezoneOffset()); location.href = "/";</script>

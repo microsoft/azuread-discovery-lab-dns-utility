@@ -49,11 +49,24 @@
                                         <input type="text" @style class="form-control" @RO value="@Model.TxtRecord" name="TxtRecord" id="TxtRecord" />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <div class="col-md-4 col-md-offset-8">
-                                        <input type="submit" value="Update DNS Validation" @disabled class="btn btn-primary pull-right @disabled" />
+                                if (Model.TxtRecord != null)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            <div class="alert alert-info">Your domain has been successfully linked to your tenant. Please 
+                                            check with your instructor or proctor if you need to reset anything.</div>
+                                        </div>
                                     </div>
-                                </div>
+
+                                }
+                                else
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-4 col-md-offset-8">
+                                            <input type="submit" value="Update DNS Validation" @disabled class="btn btn-primary pull-right @disabled" />
+                                        </div>
+                                    </div>
+                                }
                             }
                         </section>
                     </div>

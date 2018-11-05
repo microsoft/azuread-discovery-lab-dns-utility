@@ -24,7 +24,7 @@ namespace AzureADLabDNSControl.Controllers
 
         public async Task<ActionResult> LabReport(string id)
         {
-            var lab = await LabRepo.GetLab(id);
+            var lab = await LabRepo.GetLabAndSettings(id);
             return View(lab);
         }
     }

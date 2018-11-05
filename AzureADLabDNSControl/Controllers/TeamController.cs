@@ -75,11 +75,12 @@ namespace AzureADLabDNSControl.Controllers
                 ViewBag.IsLive = true;
                 return View("Index");
             }
+
             var tenantId = AdalLib.GetUserTenantId(User.Identity);
             var oid = User.Identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
             var control = await AADLinkControl.CreateAsync(tenantId, HttpContext);
-
             await control.LinkUserToTeam(oid, auth.TeamAuth, auth.LabCode);
+
             await LabRepo.UpdateTenantId(new TeamDTO { Lab = data.Lab, TeamAssignment = data.TeamAssignment }, tenantId);
 
             //add these to session too
@@ -120,6 +121,8 @@ namespace AzureADLabDNSControl.Controllers
                 //updating DNS record
                 using (var dns = new DnsAdmin())
                 {
+                    var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
+                    await dns.InitAsync(domGroup);
                     await dns.SetTxtRecord(item.TxtRecord, data.TeamAssignment.DomainName);
                 };
                 //updating 
@@ -132,6 +135,8 @@ namespace AzureADLabDNSControl.Controllers
                 ViewBag.Error = ex.Message;
                 item.TxtRecord = "";
             }
+            item.DomainName = data.TeamAssignment.DomainName;
+            item.LabId = data.Lab.Id;
             return View("Index", item);
         }
 

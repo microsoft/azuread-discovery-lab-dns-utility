@@ -8,6 +8,7 @@ using Graph;
 using System.Security.Principal;
 using Lab.Common;
 using Lab.Common.Repo;
+using Lab.Common.Infra;
 
 namespace AzureADLabDNSControl.Controllers
 {
@@ -56,6 +57,48 @@ namespace AzureADLabDNSControl.Controllers
         [Authorize]
         public ActionResult Claims()
         {
+            return View();
+        }
+        public ActionResult Error()
+        {
+            return View();
+        }
+
+        public ActionResult IssueInfo()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> IssueInfo(string comments)
+        {
+            if (HttpContext.Session == null) return View();
+
+            var eid = (HttpContext.Session != null && HttpContext.Session["ErrorID"] != null)
+                ? HttpContext.Session["ErrorID"].ToString()
+                : Request.Form["et"];
+
+            var emgr = new ErrorMgr(new RequestDTO(HttpContext));
+            try
+            {
+                var eo = await emgr.ReadError(eid, false);
+                if (eo != null)
+                {
+                    eo.UserComment = comments;
+                    await emgr.SaveError(eo);
+                }
+                else
+                {
+                    //Writing to node WEL
+                    emgr.WriteToAppLog("Unable to save user comments to. Comment: " + comments, System.Diagnostics.EventLogEntryType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                //Writing to node WEL
+                emgr.WriteToAppLog("Unable to save user comments. \r\nError: " + ex.Message + ". \r\nComment: " + comments, System.Diagnostics.EventLogEntryType.Error);
+            }
+
             return View();
         }
     }

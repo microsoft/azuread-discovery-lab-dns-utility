@@ -426,6 +426,7 @@
     <Content Include="Views\Admin\_teamModal.cshtml" />
     <Content Include="Views\Admin\_labModal.cshtml" />
     <Content Include="Views\ErrorLog\Index.cshtml" />
+    <Content Include="Views\Home\IssueInfo.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
