@@ -353,6 +353,7 @@
     <Content Include="Content\_bootstrap-datetimepicker.less" />
     <Content Include="Content\datatables\images\Sorting icons.psd" />
     <None Include="Properties\PublishProfiles\discoverazuread - Web Deploy.pubxml" />
+    <Content Include="Properties\webjobs-list.json" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\global.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
