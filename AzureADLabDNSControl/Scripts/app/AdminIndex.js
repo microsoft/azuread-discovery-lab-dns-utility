@@ -76,7 +76,7 @@
         var teamDto = {
             "Lab": lab,
             "TeamAssignment": dom
-        }
+        };
         SiteUtil.AjaxCall("/api/Lab/ResetTeamCode", JSON.stringify(teamDto), function (res) {
             $("#EditTeam").data("teamData").teamAuth = res.ResponseMessage;
             $("#resetTeamAuthRes").html(res.ResponseMessage);
@@ -92,7 +92,7 @@
         var teamDto = {
             "Lab": lab,
             "TeamAssignment": dom
-        }
+        };
         SiteUtil.AjaxCall("/api/Lab/ResetTxtAssignment", JSON.stringify(teamDto), function (res) {
             $("#EditTeam").data("teamData").dnsTxtRecord = null;
             $("#resetTxtRecordRes").html("(Not assigned)");
@@ -104,7 +104,7 @@
         var teamDto = {
             "Lab": lab,
             "TeamAssignment": team
-        }
+        };
         SiteUtil.AjaxCall("/api/Lab/CheckDomainAssignment", JSON.stringify(teamDto), callback, "POST");
     }
 
@@ -117,7 +117,7 @@
         var teamDto = {
             "Lab": lab,
             "TeamAssignment": dom
-        }
+        };
         SiteUtil.AjaxCall("/api/Lab/UnlinkDomain", JSON.stringify(teamDto), function (res) {
             SiteUtil.ShowMessage(res.ResponseMessage, "Reset Result", SiteUtil.AlertImages.info);
             if (res.ResponseMessage.substring(0, 5) != "ERROR") {
@@ -136,7 +136,7 @@
         var lab = $("#labDetails").data("data");
         var teamDto = {
             "Lab": lab
-        }
+        };
         SiteUtil.AjaxCall("/api/Lab/UnlinkAllDomains", JSON.stringify(teamDto), function (res) {
             SiteUtil.ShowMessage(res.ResponseMessage, "Reset Result", SiteUtil.AlertImages.info);
             setDetail(res.Settings);
@@ -162,7 +162,7 @@
     }
 
     function saveLab(data) {
-        var action = (($("#LabModalLabel").html() == "Add Lab") ? "AddLab" : "UpdateLab");
+        var action = ($("#LabModalLabel").html() == "Add Lab") ? "AddLab" : "UpdateLab";
         var data = {};
         if (action == "AddLab") {
             data = {
@@ -171,7 +171,7 @@
                 "city": $("#City").val(),
                 "dnsZoneRg": $("#DomainGroup").val(),
                 "attendeeCount": $("#AttendeeCount").val()
-            }
+            };
         } else {
             data = $("#labDetails").data("data");
             data.primaryInstructor = $("#Instructor").val();
@@ -375,8 +375,8 @@
                 SiteUtil.ShowMessage('"' + e.attrs.value + '" is already in the list.', 'Duplicate Entry');
                 e.preventDefault();
             }
-            var re = /\S+@microsoft.com/
-            var isValid = re.test(e.attrs.value)
+            var re = /\S+@microsoft.com/;
+            var isValid = re.test(e.attrs.value);
             if (!isValid) {
                 e.attrs.value = "";
                 SiteUtil.ShowMessage('Make sure you enter the UPN (alias@microsoft.com)', 'Check Value');

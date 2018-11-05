@@ -19,7 +19,7 @@ namespace Lab.Common.Infra
     {
         private readonly string _tenantId;
         private string _accessToken;
-        private HttpContextBase _hctx;
+        private readonly HttpContextBase _hctx;
 
         private AADLinkControl(string tenantId, HttpContextBase hctx)
         {
@@ -133,9 +133,7 @@ namespace Lab.Common.Infra
         public async Task InvalidateDomain(string domainName)
         {
             var refs = await GetDomainReferences(domainName);
-            return;
-            var delRes = await DeleteDomain(domainName);
-
+            //var delRes = await DeleteDomain(domainName);
         }
 
         public async Task<IEnumerable<DeleteError>> InvalidateAllValidatedDomains(string labCode)

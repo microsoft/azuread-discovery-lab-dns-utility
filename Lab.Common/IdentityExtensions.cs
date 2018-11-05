@@ -84,7 +84,7 @@ namespace Lab.Common
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -103,7 +103,7 @@ namespace Lab.Common
                 identity1.Claims.Where(c => c.Type == claimName).ToList().ForEach(identity1.RemoveClaim);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

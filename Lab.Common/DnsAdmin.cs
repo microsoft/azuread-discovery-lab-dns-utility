@@ -82,7 +82,7 @@ namespace Lab.Common
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DocDBLib;
 using Lab.Common;
@@ -26,8 +28,10 @@ namespace LabManageJob
             int iWait = int.Parse(ConfigurationManager.AppSettings["WebJobDebugWait"]);
             if (iWait > 0)
             {
-                //wait N seconds
-                System.Threading.Thread.Sleep(iWait * 1000);
+                while (!Debugger.IsAttached)
+                {
+                    Thread.Sleep(100);
+                }
             }
 
             var dir = AppContext.BaseDirectory;
