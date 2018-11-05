@@ -17,11 +17,7 @@ namespace LabManageJob
     public class Functions
     {
         /// <summary>
-        /// Pickup Lab document ID from queue, along with operation
-        /// Operations:
-        ///     RemoveLab
-        ///     AddLab
-        /// 
+        /// Pickup Lab document ID from queue
         /// </summary>
         /// <param name="message"></param>
         /// <param name="log"></param>

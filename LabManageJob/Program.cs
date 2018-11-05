@@ -22,6 +22,14 @@ namespace LabManageJob
         static void Main()
         {
 
+            //Check for debug flag - this gives time to attach a remote debugger
+            int iWait = int.Parse(ConfigurationManager.AppSettings["WebJobDebugWait"]);
+            if (iWait > 0)
+            {
+                //wait N seconds
+                System.Threading.Thread.Sleep(iWait * 1000);
+            }
+
             var dir = AppContext.BaseDirectory;
 
             var task = Task.Run(async () => {
