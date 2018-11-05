@@ -247,7 +247,6 @@
     <None Include="Properties\webjob-publish-settings.json" />
     <None Include="settings.config">
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
