@@ -242,6 +242,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Properties\webjob-publish-settings.json" />
     <None Include="settings.config">
       <SubType>Designer</SubType>
     </None>
