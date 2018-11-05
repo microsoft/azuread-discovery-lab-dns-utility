@@ -79,7 +79,7 @@ namespace LabManageJob
 
             Settings.GraphResource = "https://graph.microsoft.com";
 
-            var client = DocDBRepo.Initialize().Result;
+            var client = await DocDBRepo.Initialize();
 
             //DNS config
             Settings.DomainGroups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
