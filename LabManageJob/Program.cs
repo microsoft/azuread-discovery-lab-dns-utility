@@ -19,10 +19,26 @@ namespace LabManageJob
     // To learn more about Microsoft Azure WebJobs SDK, please see https://go.microsoft.com/fwlink/?LinkID=320976
     class Program
     {
+        static private DnsAdmin _dns;
+
         // Please set the following connection strings in app.config for this WebJob to run:
         // AzureWebJobsDashboard and AzureWebJobsStorage
-        static void Main()
+        public static void Main()
         {
+            try
+            {
+                MainAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Logging.WriteToAppLog("Error initializing WebJob", EventLogEntryType.Error, ex);
+                throw ex;
+            }
+        }
+
+        public static async Task MainAsync()
+        {
+            _dns = new DnsAdmin();
 
             //Check for debug flag - this gives time to attach a remote debugger
             int iWait = int.Parse(ConfigurationManager.AppSettings["WebJobDebugWait"]);
@@ -36,18 +52,8 @@ namespace LabManageJob
 
             var dir = AppContext.BaseDirectory;
 
-            var task = Task.Run(async () => {
-                await Init(ConfigurationManager.AppSettings, dir);
-            });
-            try
-            {
-                task.Wait();
-            }
-            catch (Exception ex)
-            {
-                Logging.WriteToAppLog("Error during initialization", System.Diagnostics.EventLogEntryType.Error, ex);
-                throw ex;
-            }
+            await Settings.Init(ConfigurationManager.AppSettings, dir);
+            //await Init(ConfigurationManager.AppSettings, dir);
 
             var config = new JobHostConfiguration
             {
@@ -95,21 +101,17 @@ namespace LabManageJob
 
             //DNS config
             Settings.DomainGroups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
+            await _dns.InitAsync();
 
-            using (var dns = new DnsAdmin())
+            foreach(var group in Settings.DomainGroups)
             {
-                foreach (var group in Settings.DomainGroups)
+                group.DomainList = new List<string>();
+                var zones = await _dns.GetZoneList();
+                foreach (var zone in zones)
                 {
-                    group.DomainList = new List<string>();
-                    await dns.InitAsync(group);
-                    var zones = await dns.GetZoneList();
-                    foreach (var zone in zones)
-                    {
-                        group.DomainList.Add(zone.Name);
-                    }
+                    group.DomainList.Add(zone.Name);
                 }
             }
-
         }
     }
 }

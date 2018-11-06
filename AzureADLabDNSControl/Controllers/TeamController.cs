@@ -122,7 +122,8 @@ namespace AzureADLabDNSControl.Controllers
                 using (var dns = new DnsAdmin())
                 {
                     var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
-                    await dns.InitAsync(domGroup);
+                    await dns.InitAsync();
+                    dns.SetClient(domGroup);
                     await dns.SetTxtRecord(item.TxtRecord, data.TeamAssignment.DomainName);
                 };
                 //updating 

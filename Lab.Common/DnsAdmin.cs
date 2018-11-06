@@ -9,6 +9,7 @@ using System.Web;
 using Lab.Data.Models;
 using Microsoft.Azure.Management.Dns;
 using Microsoft.Azure.Management.Dns.Models;
+using Microsoft.Rest;
 using Microsoft.Rest.Azure.Authentication;
 using Newtonsoft.Json;
 
@@ -18,24 +19,31 @@ namespace Lab.Common
     {
         private DnsManagementClient _client;
         private DomainResourceGroup _domainRG;
+        private ServiceClientCredentials _serviceCreds;
         private bool _isInit;
 
-        private async Task _initAsync(DomainResourceGroup domainGroup)
+
+        public async Task InitAsync()
+        {
+            try
+            {
+                // Build the service credentials and DNS management client
+                _serviceCreds = await ApplicationTokenProvider.LoginSilentAsync(Settings.LabAdminTenantId, Settings.LabAdminClientId, Settings.LabAdminSecret);
+                _isInit = true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void SetClient(DomainResourceGroup domainGroup)
         {
             _domainRG = domainGroup;
-
-            // Build the service credentials and DNS management client
-            var serviceCreds = await ApplicationTokenProvider.LoginSilentAsync(Settings.LabAdminTenantId, Settings.LabAdminClientId, Settings.LabAdminSecret);
-            _client = new DnsManagementClient(serviceCreds)
+            _client = new DnsManagementClient(_serviceCreds)
             {
                 SubscriptionId = _domainRG.AzureSubscriptionId
             };
-            _isInit = true;
-        }
-
-        public async Task InitAsync(DomainResourceGroup domainGroup)
-        {
-            await _initAsync(domainGroup);
         }
 
         private void CheckInit()
@@ -58,7 +66,6 @@ namespace Lab.Common
             }
             catch (Exception)
             {
-
                 throw;
             }
         }

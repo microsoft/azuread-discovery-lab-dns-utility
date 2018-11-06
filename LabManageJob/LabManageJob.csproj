@@ -245,9 +245,10 @@
     <None Include="App.Release.config" />
     <None Include="packages.config" />
     <None Include="Properties\webjob-publish-settings.json" />
-    <None Include="settings.config">
+    <Content Include="settings.config">
       <SubType>Designer</SubType>
-    </None>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Lab.Common\Lab.Common.csproj">

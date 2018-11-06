@@ -71,7 +71,8 @@ namespace Lab.Common
                 foreach (var group in DomainGroups)
                 {
                     group.DomainList = new List<string>();
-                    await dns.InitAsync(group);
+                    await dns.InitAsync();
+                    dns.SetClient(group);
                     var zones = await dns.GetZoneList();
                     foreach (var zone in zones)
                     {

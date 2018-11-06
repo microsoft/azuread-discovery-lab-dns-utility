@@ -49,7 +49,8 @@ namespace Lab.Common.Repo
 
             using (var dns = new DnsAdmin())
             {
-                await dns.InitAsync(domGroup);
+                await dns.InitAsync();
+                dns.SetClient(domGroup);
                 var itemsPerDomain = (lab.AttendeeCount / domains.Count()) + 1;
                 var counter = 0;
                 foreach (var dom in domains)
@@ -109,11 +110,11 @@ namespace Lab.Common.Repo
             try
             {
                 var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == lab.AzureSubscriptionId && d.DnsZoneRG == lab.DnsZoneRG);
-
+                
                 using (var dns = new DnsAdmin())
                 {
-                    await dns.InitAsync(domGroup);
-
+                    await dns.InitAsync();
+                    dns.SetClient(domGroup);
                     foreach (var item in assignments)
                     {
                         await dns.RemoveChildZone(item.ParentZone, item.TeamName, item.DomainName);
