@@ -27,45 +27,42 @@ namespace LabManageJob
         {
             try
             {
-                MainAsync().GetAwaiter().GetResult();
+                _dns = new DnsAdmin();
+
+                //Check for debug flag - this gives time to attach a remote debugger
+                int iWait = int.Parse(ConfigurationManager.AppSettings["WebJobDebugWait"]);
+                if (iWait > 0)
+                {
+                    while (!Debugger.IsAttached)
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
+
+                var dir = AppContext.BaseDirectory;
+
+                // Settings.Init(ConfigurationManager.AppSettings, dir).GetAwaiter().GetResult();
+
+                Init(ConfigurationManager.AppSettings, dir).GetAwaiter().GetResult();
+
+                var config = new JobHostConfiguration
+                {
+                    DashboardConnectionString = Settings.StorageConnectionString,
+                    StorageConnectionString = Settings.StorageConnectionString
+                };
+
+                config.NameResolver = new CustomNameResolver();
+
+                var host = new JobHost(config);
+                // The following code ensures that the WebJob will be running continuously
+                host.RunAndBlock();
             }
             catch (Exception ex)
             {
+                Trace.Write(ex.Message);
                 Logging.WriteToAppLog("Error initializing WebJob", EventLogEntryType.Error, ex);
                 throw ex;
             }
-        }
-
-        public static async Task MainAsync()
-        {
-            _dns = new DnsAdmin();
-
-            //Check for debug flag - this gives time to attach a remote debugger
-            int iWait = int.Parse(ConfigurationManager.AppSettings["WebJobDebugWait"]);
-            if (iWait > 0)
-            {
-                while (!Debugger.IsAttached)
-                {
-                    Thread.Sleep(100);
-                }
-            }
-
-            var dir = AppContext.BaseDirectory;
-
-            await Settings.Init(ConfigurationManager.AppSettings, dir);
-            //await Init(ConfigurationManager.AppSettings, dir);
-
-            var config = new JobHostConfiguration
-            {
-                DashboardConnectionString = Settings.StorageConnectionString,
-                StorageConnectionString = Settings.StorageConnectionString
-            };
-
-            config.NameResolver = new CustomNameResolver();
-
-            var host = new JobHost(config);
-            // The following code ensures that the WebJob will be running continuously
-            host.RunAndBlock();
         }
 
         private static async Task Init(NameValueCollection appSettings, string appRoot)
@@ -105,6 +102,7 @@ namespace LabManageJob
 
             foreach(var group in Settings.DomainGroups)
             {
+                _dns.SetClient(group);
                 group.DomainList = new List<string>();
                 var zones = await _dns.GetZoneList();
                 foreach (var zone in zones)
