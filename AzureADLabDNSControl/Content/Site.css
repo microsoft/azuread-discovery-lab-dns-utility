@@ -144,3 +144,7 @@ footer {
 .bootstrap-datetimepicker-widget table td.disabled:hover {
     background-color:#f9dada;
 }
+.tokenfield .token-input {
+    width:auto!important;
+    min-width:120px!important;
+}

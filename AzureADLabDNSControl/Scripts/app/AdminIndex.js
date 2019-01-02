@@ -199,6 +199,7 @@
         $("#Instructor").val((data == null) ? me : data.primaryInstructor);
         $("#LabDate").val((data == null) ? moment().format("MM/DD/YYYY") : SiteUtil.GetShortDate(data.labDate));
         $("#City").val((data == null) ? "" : data.city);
+        $("#DomainGroup").val(data == null ? "" : data.azureSubscriptionId + ":" + data.dnsZoneRg);
         if (data != null) {
             $('#Instructors').tokenfield('setTokens', data.instructors);
         } else {

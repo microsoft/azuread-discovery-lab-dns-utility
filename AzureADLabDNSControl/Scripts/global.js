@@ -427,7 +427,7 @@ var SiteUtil = function () {
         return res.html();
     }
     function _setHelp(obj, title, message) {
-        var sp = $("<span/>").html("*").attr("title","Click for help").css({ "cursor": "pointer", "display": "inline-block", "padding": "3px", "color": "red" }).on("click", function () {
+        var sp = $("<span/>").html("*").attr("title","Click for help").css({ "cursor": "pointer", "display": "inline-block", "padding": "0 3px", "color": "red" }).on("click", function () {
             _showModal({
                 title: "Help - " + title,
                 body: message
