@@ -37,17 +37,18 @@ namespace AzureADLabDNSControl
                 var oid = identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
                 var control = await AADLinkControl.CreateAsync(tenantId, hctx);
                 var codes = await control.GetCodes(oid);
-                identity.AddClaim(new Claim(CustomClaimTypes.LabCode, codes.labCode));
-                identity.AddClaim(new Claim(CustomClaimTypes.TeamCode, codes.teamCode));
-                if (codes.teamCode != null)
+                if (codes != null)
                 {
-                    identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUserAssigned));
+                    identity.AddClaim(new Claim(CustomClaimTypes.LabCode, codes.labCode));
+                    identity.AddClaim(new Claim(CustomClaimTypes.TeamCode, codes.teamCode));
+                    if (codes.teamCode != null)
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUserAssigned));
+                    }
+                    //add these to session too
+                    hctx.Session["labCode"] = codes.labCode;
+                    hctx.Session["teamCode"] = codes.teamCode;
                 }
-
-                //add these to session too
-                hctx.Session["labCode"] = codes.labCode;
-                hctx.Session["teamCode"] = codes.teamCode;
-
             }
             else if (aud == Settings.LabAdminClientId)
             {
