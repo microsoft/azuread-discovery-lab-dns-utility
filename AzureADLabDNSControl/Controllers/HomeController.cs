@@ -16,18 +16,6 @@ namespace AzureADLabDNSControl.Controllers
     {
         public async Task<ActionResult> Index()
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                if (User.IsInRole(CustomRoles.LabAdmin))
-                {
-                    return RedirectToAction("Index", "Admin");
-                }
-                else if (User.IsInRole(CustomRoles.LabUserAssigned))
-                {
-                    return RedirectToAction("Index", "Team");
-                }
-            }
-
             if (Request.Cookies["tzo"] == null)
             {
                 if (Session["loadTX"] != null && Session["loadTX"].ToString() == "true")
@@ -38,6 +26,16 @@ namespace AzureADLabDNSControl.Controllers
                 return View("Reload");
             }
             int tzo = int.Parse(Request.Cookies["tzo"].Value);
+
+            if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole(CustomRoles.LabAdmin))
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+
+                return RedirectToAction("Index", "Team");
+            }
 
             //todo: setup a web job to check for a lab and set it in a static var daily
             var lab = await LabRepo.GetTodaysLab(tzo);
