@@ -6,6 +6,7 @@
         $("#labDetailsInfo").css("display", "block");
 
     });
+    $("#btnExport").on("click", exportTenants);
     $("#btnAddLab").on("click", function () {
         loadLabForm();
     });
@@ -107,7 +108,11 @@
         };
         SiteUtil.AjaxCall("/api/Lab/CheckDomainAssignment", JSON.stringify(teamDto), callback, "POST");
     }
+    function exportTenants() {
+        var lab = $("#labDetails").data("data");
 
+        location.href = "/Admin/ExportTenants/" + lab.id;
+    }
     function removeDomain() {
         if (!confirm("Are you sure you want to invalidate/unlink this domain from the associated tenant?"))
             return;

@@ -4,6 +4,7 @@
     var RO = (Model.TxtRecord != null) ? "readonly" : "";
     var style = (Model.TxtRecord != null) ? "style='background-color:#efefef;'" : "";
     var disabled = (Model.TxtRecord != null) ? "disabled" : "";
+    var checkValidation = (Model.TxtRecord != null).ToString().ToLower();
 }
 <div class="row">
     <div class="col-sm-8 col-sm-offset-2">
@@ -53,8 +54,10 @@
                                 {
                                     <div class="form-group">
                                         <div class="col-md-12">
-                                            <div class="alert alert-info">Your domain has been successfully linked to your tenant. Please 
+                                            <div class="alert alert-info">Your domain validation record has been updated in DNS. Please 
                                             check with your instructor or proctor if you need to reset anything.</div>
+                                            <div id="DomainValidationStatus"></div>
+                                            <button type="button" class="btn btn-sm btn-info" id="btnRefreshStatus"><span class="glyphicon glyphicon-refresh"></span> Refresh Status...</button>
                                         </div>
                                     </div>
 
@@ -84,3 +87,36 @@
     </div>
 </div>
 
+@section scripts {
+    <script type="text/javascript">
+        $(function () {
+            var checkValidation = @checkValidation;
+            $("#btnRefreshStatus").on("click", checkDomainValidation);
+            $("form").on("submit", function () {
+                if ($("#TxtRecord").val().substr(0, 3) != "MS=") {
+                    alert("TXT record doesn't match the format - please review the help document or ask your instructor for assistance.");
+                    $("#TxtRecord").val("").focus();
+                    return false;
+                }
+                return true;
+            });
+            function checkDomainValidation() {
+                SiteUtil.AjaxCall("/api/TeamApi/CheckDomainValidation", null, function (isValid) {
+                    var status, className;
+                    if (!isValid) {
+                        status = "Your domain has not been validated in your tenant yet, or the validation hasn't propagated through Azure AD yet (this may take up to 10 minutes).";
+                        className = "alert-warning";
+                    } else {
+                        status = "Your domain has been successfully validated in your tenant.";
+                        className = "alert-success";
+                    }
+                    $("#DomainValidationStatus").removeClass().addClass("alert " + className).html(status);
+                }, "GET");
+            }
+            if (checkValidation)
+            {
+                checkDomainValidation();
+            }
+        });
+    </script>    
+}

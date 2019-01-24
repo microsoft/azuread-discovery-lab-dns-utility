@@ -29,6 +29,10 @@ namespace Lab.Data.Models
         [JsonProperty(PropertyName = "assignedTenantId")]
         public string AssignedTenantId { get; set; }
 
+        [JsonProperty(PropertyName = "assignedTenantName")]
+        public string AssignedTenantName { get; set; }
+
+
         public static string GenAuthCode(string teamName)
         {
             return string.Format("{1}-{0}", teamName, Utils.CreatePassword(5));

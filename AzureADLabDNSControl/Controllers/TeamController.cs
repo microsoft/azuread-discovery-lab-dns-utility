@@ -77,16 +77,19 @@ namespace AzureADLabDNSControl.Controllers
             }
 
             var tenantId = AdalLib.GetUserTenantId(User.Identity);
+            var tenantName = AdalLib.GetUserUPNSuffix(User.Identity);
+
             var oid = User.Identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
             var control = await AADLinkControl.CreateAsync(tenantId, HttpContext);
             await control.LinkUserToTeam(oid, auth.TeamAuth, auth.LabCode);
 
-            await LabRepo.UpdateTenantId(new TeamDTO { Lab = data.Lab, TeamAssignment = data.TeamAssignment }, tenantId);
+            await LabRepo.UpdateTenantId(new TeamDTO { Lab = data.Lab, TeamAssignment = data.TeamAssignment }, tenantId, tenantName);
 
             //add these to session too
             Session["labCode"] = auth.LabCode;
             Session["teamCode"] = auth.TeamAuth;
             Session["labId"] = data.Lab.Id;
+            Session["tenantName"] = tenantName;
 
             ViewBag.LabId = data.Lab.Id;
             var res = DnsDTO.FromTeamDTO(data);

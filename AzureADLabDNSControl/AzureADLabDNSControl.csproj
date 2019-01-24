@@ -283,6 +283,7 @@
     <Compile Include="Controllers\api\ErrorLogController.cs" />
     <Compile Include="Controllers\api\LabController.cs" />
     <Compile Include="Controllers\api\PublicController.cs" />
+    <Compile Include="Controllers\api\TeamApiController.cs" />
     <Compile Include="Controllers\api\UpdateErrorController.cs" />
     <Compile Include="Controllers\ErrorLogController.cs" />
     <Compile Include="Controllers\HomeController.cs" />

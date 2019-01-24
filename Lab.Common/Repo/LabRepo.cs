@@ -244,10 +244,11 @@ namespace Lab.Common.Repo
             return res;
         }
 
-        public static async Task<TeamDTO> UpdateTenantId(TeamDTO data, string tenantId)
+        public static async Task<TeamDTO> UpdateTenantId(TeamDTO data, string tenantId, string tenantName)
         {
             var res = await GetDomAssignment(data.Lab.LabCode, data.TeamAssignment.TeamAuth);
             res.TeamAssignment.AssignedTenantId = tenantId;
+            res.TeamAssignment.AssignedTenantName = tenantName;
             res.TeamAssignment = await UpdateTeamAssignment(res.TeamAssignment);
             return res;
         }

@@ -107,7 +107,7 @@ namespace Graph
                     }
                 }
                 var info = JsonConvert.DeserializeObject<OIDConfigResponse>(res);
-                res = new Uri(info.Issuer).Segments[1].TrimEnd('/');
+                res = info.Error ?? new Uri(info.Issuer).Segments[1].TrimEnd('/');
             }
             return res;
         }
@@ -124,11 +124,17 @@ namespace Graph
                 return identity.GetClaim(CustomClaimTypes.TenantId);
             }
 
+            var domain = GetUserUPNSuffix(identity);
+            return GetAADTenantId(domain);
+        }
+
+        public static string GetUserUPNSuffix(IIdentity identity)
+        {
             var str = identity.GetClaim(ClaimTypes.Upn);
             if (str == null)
                 str = identity.GetClaim(ClaimTypes.Email);
             var domain = str.Split('@')[1];
-            return GetAADTenantId(domain);
+            return domain;
         }
     }
 }

@@ -34,6 +34,7 @@ namespace AzureADLabDNSControl
 
                 //call Graph to get additional custom claims
                 var tenantId = AdalLib.GetUserTenantId(identity);
+                var tenantName = AdalLib.GetUserUPNSuffix(identity);
                 var oid = identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
                 var control = await AADLinkControl.CreateAsync(tenantId, hctx);
                 var codes = await control.GetCodes(oid);
@@ -41,6 +42,7 @@ namespace AzureADLabDNSControl
                 {
                     identity.AddClaim(new Claim(CustomClaimTypes.LabCode, codes.labCode));
                     identity.AddClaim(new Claim(CustomClaimTypes.TeamCode, codes.teamCode));
+                    identity.AddClaim(new Claim(CustomClaimTypes.TenantName, tenantName));
                     if (codes.teamCode != null)
                     {
                         identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUserAssigned));
@@ -48,6 +50,7 @@ namespace AzureADLabDNSControl
                     //add these to session too
                     hctx.Session["labCode"] = codes.labCode;
                     hctx.Session["teamCode"] = codes.teamCode;
+                    hctx.Session["tenantName"] = tenantName;
                 }
             }
             else if (aud == Settings.LabAdminClientId)

@@ -5,6 +5,8 @@ using Lab.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -27,7 +29,30 @@ namespace AzureADLabDNSControl.Controllers
             var lab = await LabRepo.GetLabAndSettings(id);
             return View(lab);
         }
+
+        public async Task<ActionResult> ExportTenants(string id)
+        {
+            var lab = await LabRepo.GetLabAndSettings(id);
+            var teams = lab.DomAssignments;
+            var res = new List<string>();
+            res.Add("Tenant,TenantID,AssignedDNS");
+            res.AddRange(teams.Select(t => t.AssignedTenantName + "," + t.AssignedTenantId + "," + t.DomainName));
+            var city = lab.City.ToLower().Replace(" ", "").Replace(".", "").Replace("-", "");
+            city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
+
+            var fileArray = Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, res.ToArray()));
+            var fileName = string.Format("Lab-{0}.csv", city);
+            string contentType = MimeMapping.GetMimeMapping(fileName);
+            var cd = new ContentDisposition
+            {
+                FileName = fileName,
+                Inline = false
+            };
+            Response.AppendHeader("Content-Disposition", cd.ToString());
+            return File(fileArray, contentType);
+        }
     }
+
     public class DomainGroupDTO
     {
         public string AzureSubscriptionId { get; set; }
