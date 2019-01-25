@@ -1,4 +1,5 @@
-﻿using Lab.Common;
+﻿using AzureADLabDNSControl.Infra;
+using Lab.Common;
 using Lab.Common.Infra;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace AzureADLabDNSControl.Controllers.api
         public DateTime DeleteBefore { get; set; }
     }
 
-    [Authorize(Roles = CustomRoles.LabAdmin)]
+    [AdminAuthorize(Roles = CustomRoles.LabAdmin)]
     public class ErrorLogController : ApiController
     {
         private ErrorItemBL _err;

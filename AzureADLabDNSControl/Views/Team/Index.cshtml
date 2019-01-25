@@ -1,10 +1,12 @@
-﻿@model Lab.Data.Models.DnsDTO
+﻿@using Lab.Common
+@model Lab.Data.Models.DnsDTO
 @{
     ViewBag.Title = "Manage Custom DNS";
     var RO = (Model.TxtRecord != null) ? "readonly" : "";
     var style = (Model.TxtRecord != null) ? "style='background-color:#efefef;'" : "";
     var disabled = (Model.TxtRecord != null) ? "disabled" : "";
     var checkValidation = (Model.TxtRecord != null).ToString().ToLower();
+    var tenantId = User.Identity.GetClaim(CustomClaimTypes.TenantId);
 }
 <div class="row">
     <div class="col-sm-8 col-sm-offset-2">
@@ -36,7 +38,8 @@
                         <div style="font-weight:bold;margin-bottom:10px;font-size:1.3em;">@Model.DomainName</div>
                         <p>
                             In the Azure portal, you are adding this domain as a "validated domain" in your new Azure tenant. This will allow you to synchronize your
-                            Active Directory users to the tenant using Azure AD Connect.
+                            Active Directory users to the tenant using Azure AD Connect. <br />
+                            Click here to open the portal: <a href="https://portal.azure.com/@tenantId/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Domains" target="_blank">https://portal.azure.com/@tenantId/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Domains</a>
                         </p>
                         <p>Click "Help" above for details on the process.</p>
 

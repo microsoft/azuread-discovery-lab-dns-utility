@@ -1,4 +1,5 @@
-﻿using Lab.Common;
+﻿using AzureADLabDNSControl.Infra;
+using Lab.Common;
 using Lab.Common.Infra;
 using Lab.Common.Repo;
 using Lab.Data.Models;
@@ -13,7 +14,7 @@ using System.Web.Http;
 
 namespace AzureADLabDNSControl.Controllers.api
 {
-    [Authorize(Roles = CustomRoles.LabAdmin)]
+    [AdminAuthorize(Roles = CustomRoles.LabAdmin)]
     public class LabController : ApiController
     {
         //Lab Operations

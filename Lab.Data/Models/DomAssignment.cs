@@ -32,6 +32,9 @@ namespace Lab.Data.Models
         [JsonProperty(PropertyName = "assignedTenantName")]
         public string AssignedTenantName { get; set; }
 
+        [JsonProperty(PropertyName = "tenantAdminUpn")]
+        public string TenantAdminUpn { get; set; }
+
 
         public static string GenAuthCode(string teamName)
         {

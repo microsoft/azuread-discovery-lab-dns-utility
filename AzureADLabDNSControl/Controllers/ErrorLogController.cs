@@ -1,10 +1,11 @@
-﻿using Lab.Common;
+﻿using AzureADLabDNSControl.Infra;
+using Lab.Common;
 using System.Web.Mvc;
 using System.Web.Security;
 
 namespace CSAHub.Areas.Admin.Controllers
 {
-    [Authorize(Roles = CustomRoles.LabAdmin)]
+    [AdminAuthorize(Roles = CustomRoles.LabAdmin)]
     public class ErrorLogController : Controller
     {
         public ActionResult Index()

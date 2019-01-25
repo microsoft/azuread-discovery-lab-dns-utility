@@ -13,7 +13,7 @@ using System.Web.Mvc;
 
 namespace AzureADLabDNSControl.Controllers
 {
-    [Authorize(Roles = CustomRoles.LabAdmin)]
+    [AdminAuthorize(Roles = CustomRoles.LabAdmin)]
     public class AdminController : Controller
     {
         // GET: Admin
@@ -34,9 +34,11 @@ namespace AzureADLabDNSControl.Controllers
         {
             var lab = await LabRepo.GetLabAndSettings(id);
             var teams = lab.DomAssignments;
-            var res = new List<string>();
-            res.Add("Tenant,TenantID,AssignedDNS");
-            res.AddRange(teams.Select(t => t.AssignedTenantName + "," + t.AssignedTenantId + "," + t.DomainName));
+            var res = new List<string>
+            {
+                "Tenant,AdminUpn,TenantID,AssignedDNS"
+            };
+            res.AddRange(teams.Select(t => t.AssignedTenantName + "," + t.TenantAdminUpn + "," + t.AssignedTenantId + "," + t.DomainName));
             var city = lab.City.ToLower().Replace(" ", "").Replace(".", "").Replace("-", "");
             city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
 

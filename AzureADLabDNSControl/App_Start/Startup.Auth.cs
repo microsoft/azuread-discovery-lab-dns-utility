@@ -51,6 +51,7 @@ namespace AzureADLabDNSControl
 
             OpenIdConnectAuthenticationOptions LabAdminOptions = new OpenIdConnectAuthenticationOptions
             {
+                AuthenticationType = CustomAuthType.LabAdmin,
                 ClientId = Settings.LabAdminClientId,
                 Authority = Settings.AdminAuthority,
                 PostLogoutRedirectUri = "/",
@@ -67,13 +68,13 @@ namespace AzureADLabDNSControl
                 TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
-                },
-                AuthenticationType = CustomAuthType.LabAdmin
+                }
             };
             app.UseOpenIdConnectAuthentication(LabAdminOptions);
 
             OpenIdConnectAuthenticationOptions LabUserOptions = new OpenIdConnectAuthenticationOptions
             {
+                AuthenticationType = CustomAuthType.LabUser,
                 ClientId = Settings.LabUserClientId,
                 Authority = Settings.UserAuthority,
                 PostLogoutRedirectUri = "/",
@@ -91,8 +92,7 @@ namespace AzureADLabDNSControl
                 TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
-                },
-                AuthenticationType = CustomAuthType.LabUser
+                }
             };
             app.UseOpenIdConnectAuthentication(LabUserOptions);
 

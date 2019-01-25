@@ -5,6 +5,7 @@ using Lab.Common.Repo;
 using Lab.Data.Models;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Claims;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -78,12 +79,13 @@ namespace AzureADLabDNSControl.Controllers
 
             var tenantId = AdalLib.GetUserTenantId(User.Identity);
             var tenantName = AdalLib.GetUserUPNSuffix(User.Identity);
+            var tenantAdmin = User.Identity.GetClaim(ClaimTypes.Upn);
 
             var oid = User.Identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
             var control = await AADLinkControl.CreateAsync(tenantId, HttpContext);
             await control.LinkUserToTeam(oid, auth.TeamAuth, auth.LabCode);
 
-            await LabRepo.UpdateTenantId(new TeamDTO { Lab = data.Lab, TeamAssignment = data.TeamAssignment }, tenantId, tenantName);
+            await LabRepo.UpdateTenantId(new TeamDTO { Lab = data.Lab, TeamAssignment = data.TeamAssignment }, tenantId, tenantName, tenantAdmin);
 
             //add these to session too
             Session["labCode"] = auth.LabCode;
