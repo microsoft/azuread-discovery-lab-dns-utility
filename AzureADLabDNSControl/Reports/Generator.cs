@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.IO;
-using Microsoft.Reporting.WebForms;
+using TheArtOfDev.HtmlRenderer.PdfSharp;
 
 namespace AzureADLabDNSControl.Reports
 {
@@ -17,7 +17,7 @@ namespace AzureADLabDNSControl.Reports
             Byte[] res = null;
             using (var stream = new MemoryStream())
             {
-                var doc = TheArtOfDev.HtmlRenderer.PdfSharp.PdfGenerator.GeneratePdf(html, PdfSharp.PageSize.Letter);
+                var doc = PdfGenerator.GeneratePdf(html, PdfSharp.PageSize.Letter);
                 doc.Save(stream);
                 res = stream.ToArray();
             }
