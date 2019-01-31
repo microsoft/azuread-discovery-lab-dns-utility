@@ -17,10 +17,16 @@
         var data = $("#labDetails").data("data");
         loadLabForm(data);
     });
-    $("#btnReport").on("click", function () {
+
+    $("#btnPdfReport").on("click", function () {
         var id = $("#labDetails").data("data").id;
         location.href = "/Admin/LabReport/" + id;
     });
+    $("#btnCsvReport").on("click", function () {
+        var id = $("#labDetails").data("data").id;
+        location.href = "/Admin/LabReportCsv/" + id;
+    });
+
     SiteUtil.SetHelp("#domGroupHelp", "Domain Group", "Select from a list of resource groups containing domain(s) to use for your lab.");
 
     $("#labList").on("click", "li:not(.info)", function () {
@@ -108,6 +114,7 @@
         };
         SiteUtil.AjaxCall("/api/Lab/CheckDomainAssignment", JSON.stringify(teamDto), callback, "POST");
     }
+
     function exportTenants() {
         var lab = $("#labDetails").data("data");
 
@@ -198,19 +205,31 @@
             }
         });
     }
+    function refreshRGs(callback) {
+        SiteUtil.AjaxCall("/api/dns/GetDnsResourceGroups", null, callback);
+    }
+
     function loadLabForm(data) {
         $("#LabModalLabel").html((data == null) ? "Add Lab" : "Edit Lab");
 
         $("#Instructor").val((data == null) ? me : data.primaryInstructor);
         $("#LabDate").val((data == null) ? moment().format("MM/DD/YYYY") : SiteUtil.GetShortDate(data.labDate));
         $("#City").val((data == null) ? "" : data.city);
-        $("#DomainGroup").val(data == null ? "" : data.azureSubscriptionId + ":" + data.dnsZoneRg);
         if (data != null) {
             $('#Instructors').tokenfield('setTokens', data.instructors);
         } else {
             $("#Instructors").tokenfield('setTokens', []);
         }
-        $("#EditLab").modal('show');
+
+        refreshRGs(function (res) {
+            $("#DomainGroup option").remove();
+            for (x = 0; x < res.length; x++) {
+                var item = res[x];
+                $("<option/>").attr("value", item.Value).html(item.Text).appendTo("#DomainGroup");
+            }
+            $("#DomainGroup").val(data == null ? "" : data.azureSubscriptionId + ":" + data.dnsZoneRg);
+            $("#EditLab").modal('show');
+        });
     }
     function getLabList() {
         SiteUtil.AjaxCall("/api/Lab/GetLabs", null, function (res) {

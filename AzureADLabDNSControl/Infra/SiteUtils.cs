@@ -214,5 +214,28 @@ namespace AzureADLabDNSControl.Infra
         {
             return scheme + "://" + host;
         }
+
+        public static void UpsertCookie(HttpContextBase hctx, string name, string value)
+        {
+            UpsertCookie((HttpContextWrapper)hctx, name, value);
+        }
+
+        public static void UpsertCookie(HttpContextWrapper hctx, string name, string value)
+        {
+            var cookie = hctx.Request.Cookies.Get(name);
+            if (cookie == null)
+            {
+                hctx.Response.Cookies.Add(new HttpCookie(name, value)
+                {
+                    HttpOnly = true,
+                    Secure = true
+                });
+            }
+            else
+            {
+                cookie.Value = value;
+                hctx.Response.Cookies.Set(cookie);
+            }
+        }
     }
 }

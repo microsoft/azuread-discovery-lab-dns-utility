@@ -14,6 +14,27 @@ namespace Lab.Common.Repo
 {
     public static class LabRepo
     {
+        public static async Task<IEnumerable<DomainGroupDTO>> GetLabStats()
+        {
+            var list = new List<DomainGroupDTO>();
+
+            foreach (var group in Settings.DomainGroups)
+            {
+                list.Add(new DomainGroupDTO
+                {
+                    DnsZoneRG = group.DnsZoneRG,
+                    AzureSubscriptionId = group.AzureSubscriptionId
+                });
+            }
+
+            var labs = await DocDBRepo.DB<LabSettings>.GetItemsAsync();
+            foreach(var lab in labs)
+            {
+                list.Single(d => d.DnsZoneRG == lab.DnsZoneRG).ZoneCount += lab.AttendeeCount;
+            }
+            return list;
+        }
+
         public static async Task<IEnumerable<LabSettings>> AddNewLab(LabSettings lab, string user)
         {
             try
@@ -43,8 +64,8 @@ namespace Lab.Common.Repo
             //lab.AttendeeCount
             var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == lab.AzureSubscriptionId && d.DnsZoneRG == lab.DnsZoneRG);
             var domains = domGroup.DomainList;
-            var city = lab.City.ToLower().Replace(" ", "").Replace(".", "").Replace("-", "");
-            city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
+            //var city = lab.City.ToLower().Replace(" ", "").Replace(".", "").Replace("-", "");
+            //city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
             string auth = null;
 
             using (var dns = new DnsAdmin())
@@ -64,7 +85,7 @@ namespace Lab.Common.Repo
                             continue;
 
                         //create [itemsPerDomain] teams/child domains per parent domain name
-                        var team = string.Format("{0}{1}", city, (counter + 1));
+                        var team = string.Format("{0}{1}", lab.LabName, (counter + 1));
                         auth = DomAssignment.GenAuthCode(team);
                         var newTeamItem = new DomAssignment
                         {

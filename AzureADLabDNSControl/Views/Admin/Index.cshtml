@@ -1,5 +1,4 @@
-﻿@model IEnumerable<SelectListItem>
-@{
+﻿@{
     ViewBag.Title = "Lab Admin";
 }
 
@@ -21,7 +20,15 @@
             <div class="form-group control">
                 <div class="col-sm-12">
                     <button id="btnEditLab" class="btn btn-warning control"><span class="glyphicon glyphicon-cog"></span> Edit...</button>
-                    <button id="btnReport" class="btn btn-info control"><span class="glyphicon glyphicon-blackboard"></span> Print Report...</button>
+                    <div class="dropdown" style="display:inline">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="ReportMenu" data-toggle="dropdown" aria-haspopup="true">
+                            <span class="glyphicon glyphicon-blackboard"></span> Download...
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="ReportMenu">
+                            <li><a id="btnPdfReport" href="#">PDF Report</a></li>
+                            <li><a id="btnCsvReport" href="#">CSV Report</a></li>
+                        </ul>
+                    </div>
                     <button id="btnExport" class="btn btn-info control"><span class="glyphicon glyphicon-cloud"></span> Export Tenants...</button>
                     <button id="btnClose" class="btn btn-info control"><span class="glyphicon glyphicon-check"></span> Close</button>
                 </div>
@@ -69,7 +76,7 @@
     </div>
 </div>
 
-@Html.Partial("_labModal", Model)
+@Html.Partial("_labModal")
 @Html.Partial("_teamModal")
 
 @section scripts {

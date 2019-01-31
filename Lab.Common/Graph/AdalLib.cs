@@ -34,21 +34,12 @@ namespace Graph
             var data = await GetResourceAsync(request, tenantId, hctx, verb, body);
             return new AdalResponse<T>(data);
         }
-
-        public static async Task<AdalResponse> GetResourceAsync(string request, string tenantId, HttpContextBase hctx, HttpMethod verb = null, string body=null)
+        public static async Task<AdalResponse> GetResourceAsync(string request, string accessToken, HttpMethod verb = null, string body = null)
         {
             var res = new AdalResponse
             {
                 Successful = true
             };
-
-            string token = await GetAccessToken(hctx, tenantId);
-            if (token == "")
-            {
-                res.Successful = false;
-                res.Message = "Reauthenticate";
-                return res;
-            }
 
             using (HttpClient client = new HttpClient())
             {
@@ -57,7 +48,7 @@ namespace Graph
                     verb = verb ?? HttpMethod.Get;
                     HttpRequestMessage req = new HttpRequestMessage(verb, request);
                     HttpResponseMessage response = null;
-                    req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                     if (body != null)
                     {
                         req.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
@@ -67,7 +58,7 @@ namespace Graph
                     res.ResponseContent = await response.Content.ReadAsStringAsync();
                     res.StatusCode = response.StatusCode;
                     res.Message = response.ReasonPhrase;
-                    
+
                     if (!response.IsSuccessStatusCode)
                     {
                         res.Successful = false;
@@ -87,6 +78,20 @@ namespace Graph
                     return res;
                 }
             }
+        }
+
+        public static async Task<AdalResponse> GetResourceAsync(string request, string tenantId, HttpContextBase hctx, HttpMethod verb = null, string body=null)
+        {
+            string token = await GetAccessToken(hctx, tenantId);
+            if (token == "")
+            {
+                return new AdalResponse
+                {
+                    Successful = false,
+                    Message = "Reauthenticate"
+                };
+            }
+            return await GetResourceAsync(request, token, verb, body);
         }
 
         public static string GetAADTenantId(string domainName)

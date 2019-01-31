@@ -38,6 +38,15 @@ namespace Lab.Data.Models
         [JsonProperty(PropertyName = "instructors")]
         public IEnumerable<string> Instructors { get; set; }
 
+        [JsonIgnore]
+        public string LabName { get
+            {
+                var city = City.ToLower().Replace(" ", "").Replace(".", "").Replace("-", "");
+                city += (LabDate.Month.ToString() + LabDate.Day.ToString());
+                return city;
+            }
+        }
+
         public static string GenLabCode()
         {
             return Utils.CreatePassword(8);

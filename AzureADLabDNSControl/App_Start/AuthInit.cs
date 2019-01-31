@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
+using AzureADLabDNSControl.Infra;
 using Graph;
 using Lab.Common;
 using Lab.Common.Infra;
@@ -48,6 +49,10 @@ namespace AzureADLabDNSControl
                         identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUserAssigned));
                     }
                     //add these to session too
+                    //SiteUtils.UpsertCookie(hctx, "labCode", codes.labCode);
+                    //SiteUtils.UpsertCookie(hctx, "teamCode", codes.teamCode);
+                    //SiteUtils.UpsertCookie(hctx, "tenantName", tenantName);
+
                     hctx.Session["labCode"] = codes.labCode;
                     hctx.Session["teamCode"] = codes.teamCode;
                     hctx.Session["tenantName"] = tenantName;

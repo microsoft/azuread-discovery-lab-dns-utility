@@ -1,4 +1,5 @@
-﻿using Graph;
+﻿using AzureADLabDNSControl.Infra;
+using Graph;
 using Lab.Common;
 using Lab.Common.Infra;
 using Lab.Common.Repo;
@@ -29,7 +30,10 @@ namespace AzureADLabDNSControl.Controllers
                 {
                     labCode = Session["labCode"].ToString();
                     teamCode = Session["teamCode"].ToString();
-                } else
+                    //labCode = Request.Cookies["labCode"].Value;
+                    //teamCode = Request.Cookies["teamCode"].Value;
+                }
+                else
                 {
                     return RedirectToAction("SignIn", "Account", routeValues: new { force = "true"});
                 }
@@ -93,6 +97,11 @@ namespace AzureADLabDNSControl.Controllers
             Session["labId"] = data.Lab.Id;
             Session["tenantName"] = tenantName;
 
+            //SiteUtils.UpsertCookie(HttpContext, "labCode", auth.LabCode);
+            //SiteUtils.UpsertCookie(HttpContext, "teamCode", auth.TeamAuth);
+            //SiteUtils.UpsertCookie(HttpContext, "labId", data.Lab.Id);
+            //SiteUtils.UpsertCookie(HttpContext, "tenantName", tenantName);
+
             ViewBag.LabId = data.Lab.Id;
             var res = DnsDTO.FromTeamDTO(data);
             return View(res);
@@ -106,11 +115,11 @@ namespace AzureADLabDNSControl.Controllers
         [HttpPost]
         public async Task<ActionResult> UpdateAssignment(DnsDTO item)
         {
-            //domain name, lab id missing, deleted from form
-            //var data = await LabRepo.GetDomAssignment(item);
-
             string labCode = Session["labCode"].ToString();
             string teamCode = Session["teamCode"].ToString();
+
+            //string labCode = Request.Cookies["labCode"].ToString();
+            //string teamCode = Request.Cookies["teamCode"].ToString();
             var data = await LabRepo.GetDomAssignment(labCode, teamCode);
 
             var test = ContinueEditingAssignment(data);

@@ -2,10 +2,10 @@
 @model Lab.Data.Models.DnsDTO
 @{
     ViewBag.Title = "Manage Custom DNS";
-    var RO = (Model.TxtRecord != null) ? "readonly" : "";
-    var style = (Model.TxtRecord != null) ? "style='background-color:#efefef;'" : "";
-    var disabled = (Model.TxtRecord != null) ? "disabled" : "";
-    var checkValidation = (Model.TxtRecord != null).ToString().ToLower();
+    var RO = (Model != null && Model.TxtRecord != null) ? "readonly" : "";
+    var style = (Model != null && Model.TxtRecord != null) ? "style='background-color:#efefef;'" : "";
+    var disabled = (Model != null && Model.TxtRecord != null) ? "disabled" : "";
+    var checkValidation = (Model != null && Model.TxtRecord != null).ToString().ToLower();
     var tenantId = User.Identity.GetClaim(CustomClaimTypes.TenantId);
 }
 <div class="row">

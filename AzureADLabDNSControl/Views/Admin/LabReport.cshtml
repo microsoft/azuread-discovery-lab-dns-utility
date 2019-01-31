@@ -1,89 +1,27 @@
 ﻿@using Lab.Data.Models
 @model LabSettingsFull
 @{
+    Layout = null;
     ViewBag.Title = "LabReport";
     var i = 0;
 }
 
-<h2>Lab Report</h2>
+<html>
+<head>
+    <title>Lab Report</title>
+    <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap-theme.min.css" />
 
-<div class="row">
-    <div class="col-sm-3">City</div>
-    <div class="col-sm-9">@Model.City</div>
-</div>
-<div class="row">
-    <div class="col-sm-3">Date</div>
-    <div class="col-sm-9">@Model.LabDate.ToShortDateString()</div>
-</div>
-<div class="row">
-    <div class="col-sm-3">Instructor</div>
-    <div class="col-sm-9">@Model.PrimaryInstructor</div>
-</div>
-<div class="row">
-    <div class="col-sm-3">Lab Code</div>
-    <div class="col-sm-9 code">@Model.LabCode</div>
-</div>
-<hr />
-On each of the following pages, please cut between each "Domain" section and hand out the slips to each lab team. 
-<div class="pageBreak">&nbsp;</div>
-@foreach (var team in Model.DomAssignments)
-{
-    i++;
-    <div class="row">
-        <div class="col-sm-3">Domain:</div>
-        <div class="col-sm-9">@team.DomainName</div>
-    </div>
-
-    <div class="row">
-        <div class="col-sm-3">Team Auth Key</div>
-        <div class="col-sm-9 code">@team.TeamAuth</div>
-    </div>
-
-    <div class="row instructions">
-        <div class="col-sm-12">
-            <hr />
-            <p>Instructions:</p>
-            <ol>
-                <li>Navigate to <u>https://discoverazuread.azurewebsites.net/</u> </li>
-                <li>Enter your Lab Code (from the instructor), and your Team Auth Key</li>
-                <li>Click to view your team domain update tool</li>
-                <li>Continue with the instructor</li>
-            </ol>
-        </div>
-    </div>
-    if (i == 5)
-    {
-        i = 0;
-        <div class="pageBreak">&nbsp;</div>
-    }
-}
-
-@section scripts {
-    @if (Request.QueryString["raw"] != "1")
-    {
-        <script type="text/javascript">
-            $(function () {
-
-                window.print();
-                setTimeout(function () {
-                    location.href = "/Admin";
-                }, 100);
-            });
-        </script>
-    }
-}
-
-@section styles {
     <style type="text/css">
-        @@media print {
-            div.pageBreak {
-                page-break-after: always;
-                break-after: always;
-            }
+        div.pageBreak {
+            page-break-after: always;
+            break-after: always;
         }
+
         div.instructions {
-            margin-bottom:60px;
+            margin-bottom: 60px;
         }
+
         .code {
             font-family: Courier New, Courier, Consolas, monospace;
             font-weight: bold;
@@ -99,4 +37,59 @@ On each of the following pages, please cut between each "Domain" section and han
             font-size: 1.3em;
         }
     </style>
-}
+</head>
+<body>
+    <h2>Lab Report</h2>
+
+    <div class="row">
+        <div class="col-sm-3">City</div>
+        <div class="col-sm-9">@Model.City</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3">Date</div>
+        <div class="col-sm-9">@Model.LabDate.ToShortDateString()</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3">Instructor</div>
+        <div class="col-sm-9">@Model.PrimaryInstructor</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3">Lab Code</div>
+        <div class="col-sm-9 code">@Model.LabCode</div>
+    </div>
+    <hr />
+    On each of the following pages, please cut between each "Domain" section and hand out the slips to each lab team.
+    <div class="pageBreak">&nbsp;</div>
+    @foreach (var team in Model.DomAssignments)
+    {
+        i++;
+        <div class="row">
+            <div class="col-sm-3">Domain:</div>
+            <div class="col-sm-9">@team.DomainName</div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-3">Team Auth Key</div>
+            <div class="col-sm-9 code">@team.TeamAuth</div>
+        </div>
+
+        <div class="row instructions">
+            <div class="col-sm-12">
+                <hr />
+                <p>Instructions:</p>
+                <ol>
+                    <li>Navigate to <u>https://discoverazuread.azurewebsites.net/</u> </li>
+                    <li>Enter your Lab Code (from the instructor), and your Team Auth Key</li>
+                    <li>Click to view your team domain update tool</li>
+                    <li>Continue with the instructor</li>
+                </ol>
+            </div>
+        </div>
+        if (i == 5)
+        {
+            i = 0;
+            <div class="pageBreak">&nbsp;</div>
+        }
+    }
+</body>
+</html>

@@ -28,12 +28,55 @@
                 }
             </table>
         </div>
+        <div class="col-sm-12">
+            <h4>Session variables</h4>
+            <table class="table-hover table-striped claim-table">
+                <tr>
+                    <th class="claim-type claim-data claim-head">Name</th>
+                    <th class="claim-data claim-head">Value</th>
+                </tr>
+                @foreach (string var in Session)
+                {
+                    <tr>
+                        <td class="claim-type claim-data">@var</td>
+                        <td class="claim-data">@Session[var].ToString()</td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="col-sm-12">
+            <h4>Cookie variables</h4>
+            <table class="table-hover table-striped claim-table">
+                <tr>
+                    <th class="claim-type claim-data claim-head">Name</th>
+                    <th class="claim-data claim-head">Value</th>
+                </tr>
+                @foreach (string var in Request.Cookies)
+                {
+                    <tr>
+                        <td class="claim-type claim-data">@var</td>
+                        <td class="claim-data">@Request.Cookies[var].ToString()</td>
+                    </tr>
+                }
+            </table>
+        </div>
     </div>
 </div>
 @section styles {
     <style type="text/css">
         div.panel-body td:not(.claim-type) {
             word-break:break-all;
+            padding:3px;
+        }
+        .col-sm-12 h4 {
+            border-top:2px solid #9a9a9a;
+            margin-top:14px;
+            padding-top:10px;
+        }
+        table {
+            border:1px solid #dddddd;
+        }
+        th, td {
             padding:3px;
         }
     </style>

@@ -53,13 +53,13 @@ namespace Lab.Common.Infra
                 }
             };
             string body = JsonConvert.SerializeObject(data);
-            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, new HttpMethod("PATCH"), body);
+            var res = await AdalLib.GetResourceAsync(url, _accessToken, new HttpMethod("PATCH"), body);
         }
 
         public async Task<MicrosoftTeamcodes> GetCodes(string oid)
         {
             var url = string.Format("https://graph.microsoft.com/v1.0/users/{0}?$select=displayName,id,description,microsoft_teamcodes", oid);
-            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Get);
+            var res = await AdalLib.GetResourceAsync(url, _accessToken, HttpMethod.Get);
             return JsonConvert.DeserializeObject<AttributeUpdate>(res.ResponseContent).microsoft_teamcodes;
         }
 
@@ -82,7 +82,7 @@ namespace Lab.Common.Infra
         public async Task<AdalResponse<Domain>> GetDomain(string domain)
         {
             var url = string.Format("https://graph.microsoft.com/v1.0/domains/{0}", domain);
-            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Get);
+            var res = await AdalLib.GetResourceAsync(url, _accessToken, HttpMethod.Get);
             return new AdalResponse<Domain>(res);
         }
 
@@ -94,7 +94,7 @@ namespace Lab.Common.Infra
         public async Task<AdalResponse> DeleteDomain(string domain)
         {
             var url = string.Format("https://graph.microsoft.com/v1.0/domains/{0}", domain);
-            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Delete);
+            var res = await AdalLib.GetResourceAsync(url, _accessToken, HttpMethod.Delete);
             if (!res.Successful)
             {
                 var err = new AdalResponse<DomainError>(res);
@@ -119,14 +119,14 @@ namespace Lab.Common.Infra
         public async Task<AdalResponse<DirectoryObjects>> GetDomainReferences(string domain)
         {
             var url = string.Format("https://graph.microsoft.com/v1.0/domains/{0}/domainNameReferences", domain);
-            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Get);
+            var res = await AdalLib.GetResourceAsync(url, _accessToken, HttpMethod.Get);
             return new AdalResponse<DirectoryObjects>(res);
         }
 
         public async Task<AdalResponse> DeleteObject(string id)
         {
             var url = string.Format("https://graph.microsoft.com/v1.0/directoryObjects/{0}", id);
-            var res = await AdalLib.GetResourceAsync(url, _tenantId, _hctx, HttpMethod.Delete);
+            var res = await AdalLib.GetResourceAsync(url, _accessToken, HttpMethod.Delete);
             return res;
         }
 
