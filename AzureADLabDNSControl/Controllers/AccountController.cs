@@ -35,6 +35,13 @@ namespace AzureADLabDNSControl.Controllers
                     CustomAuthType.LabUser);
             }
         }
+        [Authorize]
+        public void Refresh()
+        {
+            // Send an OpenID Connect sign-in request.
+            HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties { RedirectUri = "/team" },
+                    CustomAuthType.LabUser);
+        }
 
         public void SignOut()
         {

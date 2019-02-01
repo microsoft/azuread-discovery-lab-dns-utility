@@ -86,6 +86,12 @@ namespace AzureADLabDNSControl
                         context.ProtocolMessage.RedirectUri = appBaseUrl + "/";
                         context.ProtocolMessage.PostLogoutRedirectUri = appBaseUrl;
                         context.ProtocolMessage.Prompt = "login";
+
+                        if (context.Request.Path.Value == "/account/refresh")
+                        {
+                            context.ProtocolMessage.LoginHint = context.Request.User.Identity.Name;
+                            context.ProtocolMessage.Prompt = "none";
+                        }
                         return Task.FromResult(0);
                     },
                 },

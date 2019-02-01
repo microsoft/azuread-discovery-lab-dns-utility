@@ -41,7 +41,7 @@ namespace Lab.Common.Infra
         /// Add Team code and Lab code as custom attributes of the logged-in user
         /// </summary>
         /// <returns></returns>
-        public async Task LinkUserToTeam(string oid, string teamCode, string labCode)
+        public async Task<AdalResponse> LinkUserToTeam(string oid, string teamCode, string labCode)
         {
             var url=string.Format("https://graph.microsoft.com/v1.0/users/{0}",oid);
             var data = new AttributeUpdate
@@ -53,7 +53,7 @@ namespace Lab.Common.Infra
                 }
             };
             string body = JsonConvert.SerializeObject(data);
-            var res = await AdalLib.GetResourceAsync(url, _accessToken, new HttpMethod("PATCH"), body);
+            return await AdalLib.GetResourceAsync(url, _accessToken, new HttpMethod("PATCH"), body);
         }
 
         public async Task<MicrosoftTeamcodes> GetCodes(string oid)

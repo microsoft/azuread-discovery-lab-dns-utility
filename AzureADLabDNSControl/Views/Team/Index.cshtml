@@ -104,14 +104,21 @@
                 return true;
             });
             function checkDomainValidation() {
-                SiteUtil.AjaxCall("/api/TeamApi/CheckDomainValidation", null, function (isValid) {
+                SiteUtil.AjaxCall("/api/TeamApi/CheckDomainValidation", null, function (adalResponse) {
                     var status, className;
-                    if (!isValid) {
-                        status = "Your domain has not been validated in your tenant yet, or the validation hasn't propagated through Azure AD yet (this may take up to 10 minutes).";
+                    if (adalResponse.StatusCode == 404) {
+                        status = "Your domain hasn't appeared in your tenant yet...refresh to try again.";
                         className = "alert-warning";
                     } else {
-                        status = "Your domain has been successfully validated in your tenant.";
-                        className = "alert-success";
+                        if (adalResponse.StatusCode == 200) {
+                            if (!adalResponse.Object.isVerified) {
+                                status = "Your domain has not been verified in your tenant yet. Did you click the \"Verify\" button in Azure after updating the TXT record? It may take 20-30 seconds after you verify before it will register here.";
+                                className = "alert-warning";
+                            } else {
+                                status = "Your domain has been successfully validated in your tenant.";
+                                className = "alert-success";
+                            }
+                        }
                     }
                     $("#DomainValidationStatus").removeClass().addClass("alert " + className).html(status);
                 }, "GET");

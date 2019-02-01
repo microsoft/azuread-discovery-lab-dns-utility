@@ -5,9 +5,11 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using AzureADLabDNSControl.Infra;
+using DocDBLib;
 using Graph;
 using Lab.Common;
 using Lab.Common.Infra;
+using Lab.Data.Models;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Notifications;
 using Microsoft.Owin.Security.OpenIdConnect;
@@ -37,14 +39,16 @@ namespace AzureADLabDNSControl
                 var tenantId = AdalLib.GetUserTenantId(identity);
                 var tenantName = AdalLib.GetUserUPNSuffix(identity);
                 var oid = identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
-                var control = await AADLinkControl.CreateAsync(tenantId, hctx);
-                var codes = await control.GetCodes(oid);
-                if (codes != null)
+                var team = (await DocDBRepo.DB<DomAssignment>.GetItemsAsync(d => d.AssignedTenantName == tenantName)).FirstOrDefault();
+
+                //var control = await AADLinkControl.CreateAsync(tenantId, hctx);
+                //var codes = await control.GetCodes(oid);
+                if (team != null)
                 {
-                    identity.AddClaim(new Claim(CustomClaimTypes.LabCode, codes.labCode));
-                    identity.AddClaim(new Claim(CustomClaimTypes.TeamCode, codes.teamCode));
+                    identity.AddClaim(new Claim(CustomClaimTypes.LabCode, team.LabCode));
+                    identity.AddClaim(new Claim(CustomClaimTypes.TeamCode, team.TeamAuth));
                     identity.AddClaim(new Claim(CustomClaimTypes.TenantName, tenantName));
-                    if (codes.teamCode != null)
+                    if (team.TeamAuth != null)
                     {
                         identity.AddClaim(new Claim(ClaimTypes.Role, CustomRoles.LabUserAssigned));
                     }
@@ -53,8 +57,8 @@ namespace AzureADLabDNSControl
                     //SiteUtils.UpsertCookie(hctx, "teamCode", codes.teamCode);
                     //SiteUtils.UpsertCookie(hctx, "tenantName", tenantName);
 
-                    hctx.Session["labCode"] = codes.labCode;
-                    hctx.Session["teamCode"] = codes.teamCode;
+                    hctx.Session["labCode"] = team.LabCode;
+                    hctx.Session["teamCode"] = team.TeamAuth;
                     hctx.Session["tenantName"] = tenantName;
                 }
             }

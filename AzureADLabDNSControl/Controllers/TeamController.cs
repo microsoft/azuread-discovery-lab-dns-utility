@@ -30,8 +30,6 @@ namespace AzureADLabDNSControl.Controllers
                 {
                     labCode = Session["labCode"].ToString();
                     teamCode = Session["teamCode"].ToString();
-                    //labCode = Request.Cookies["labCode"].Value;
-                    //teamCode = Request.Cookies["teamCode"].Value;
                 }
                 else
                 {
@@ -86,25 +84,10 @@ namespace AzureADLabDNSControl.Controllers
             var tenantAdmin = User.Identity.GetClaim(ClaimTypes.Upn);
 
             var oid = User.Identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
-            var control = await AADLinkControl.CreateAsync(tenantId, HttpContext);
-            await control.LinkUserToTeam(oid, auth.TeamAuth, auth.LabCode);
 
             await LabRepo.UpdateTenantId(new TeamDTO { Lab = data.Lab, TeamAssignment = data.TeamAssignment }, tenantId, tenantName, tenantAdmin);
 
-            //add these to session too
-            Session["labCode"] = auth.LabCode;
-            Session["teamCode"] = auth.TeamAuth;
-            Session["labId"] = data.Lab.Id;
-            Session["tenantName"] = tenantName;
-
-            //SiteUtils.UpsertCookie(HttpContext, "labCode", auth.LabCode);
-            //SiteUtils.UpsertCookie(HttpContext, "teamCode", auth.TeamAuth);
-            //SiteUtils.UpsertCookie(HttpContext, "labId", data.Lab.Id);
-            //SiteUtils.UpsertCookie(HttpContext, "tenantName", tenantName);
-
-            ViewBag.LabId = data.Lab.Id;
-            var res = DnsDTO.FromTeamDTO(data);
-            return View(res);
+            return RedirectToAction("refresh", "account");
         }
 
         /// <summary>
@@ -118,8 +101,6 @@ namespace AzureADLabDNSControl.Controllers
             string labCode = Session["labCode"].ToString();
             string teamCode = Session["teamCode"].ToString();
 
-            //string labCode = Request.Cookies["labCode"].ToString();
-            //string teamCode = Request.Cookies["teamCode"].ToString();
             var data = await LabRepo.GetDomAssignment(labCode, teamCode);
 
             var test = ContinueEditingAssignment(data);
