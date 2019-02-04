@@ -1,5 +1,5 @@
 ﻿<p>
-    This is a lab utility to assist with configuration of your team's lab today. Please sign in using your new tenant administrator account.
+    This is a lab utility to assist with configuration of your team's lab. Please sign in using your new tenant administrator account.
 </p>
 <p>
     IMPORTANT: the first time you sign in, you will need to "consent" to the application, which will install and enable it in your tenant.
@@ -9,6 +9,10 @@
     <u><b>DO NOT LOGIN OR CONSENT</b></u> to this application
     using your work login or any other login account other than the one you created when you created your tenant.
 </p>
+<p class="alert alert-warning">
+    <u><b>YOU MUST HAVE</b></u> your team lab assignment before you can use the utility.
+</p>
+
 <p style="text-align:center;">
     @Html.ActionLink("Sign in", "SignIn", "Account", routeValues: null, htmlAttributes: new { id = "loginLink", @class = "btn btn-primary" })
 </p>

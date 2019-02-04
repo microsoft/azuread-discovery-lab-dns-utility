@@ -1,18 +1,6 @@
-﻿@using Lab.Data.Models
-@model LabSettings
-
-@{
-    var partial = "";
-    if ((bool)ViewBag.IsLive)
-    {
-        ViewBag.Title = string.Format("{0} - Team Login", Model.City);
-        partial = "_UserLogin";
-    }
-    else
-    {
-        ViewBag.Title = "No Sessions Today";
-        partial = "_NoSession";
-    }
+﻿@{
+    ViewBag.Title = "Azure AD Lab Utility";
+    var partial = "_UserLogin";
 }
 
 <div class="row">

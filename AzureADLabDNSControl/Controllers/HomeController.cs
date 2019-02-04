@@ -38,11 +38,11 @@ namespace AzureADLabDNSControl.Controllers
             }
 
             //todo: setup a web job to check for a lab and set it in a static var daily
-            var lab = await LabRepo.GetTodaysLab(tzo);
-            var isLive = (lab.Count() == 1);
-            ViewBag.IsLive = isLive;
-            var data = (isLive) ? lab.Single() : null;
-            return View(data);
+            //var lab = await LabRepo.GetTodaysLab(tzo);
+           // var isLive = (lab.Count() == 1);
+            //ViewBag.IsLive = isLive;
+            //var data = (isLive) ? lab.Single() : null;
+            return View();
         }
 
         public ActionResult About()
