@@ -202,7 +202,6 @@ namespace AzureADLabDNSControl.Controllers.api
                 //remove zone record from zone
                 using (var dns = new DnsAdmin())
                 {
-                    //var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
                     var domGroup = await _repo.GetGroup(data.Lab.AzureSubscriptionId, data.Lab.DnsZoneRG);
 
                     await dns.InitAsync();

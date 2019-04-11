@@ -11,16 +11,22 @@
     "skuCapacity": {
       "value": 1
     },
-    "tenantName": {
-      "value": null
-    },
     "tenantId": {
       "value": null
     },
-    "clientId": {
+    "tenantName": {
       "value": null
     },
-    "clientSecret": {
+    "adminClientId": {
+      "value": null
+    },
+    "adminClientIdSecret": {
+      "value": null
+    },
+    "studentClientId": {
+      "value": null
+    },
+    "studentClientSecret": {
       "value": null
     },
     "repoURL": {

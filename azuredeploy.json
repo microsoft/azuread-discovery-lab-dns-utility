@@ -51,7 +51,7 @@
       }
     },
     "adminClientSecret": {
-      "type": "string",
+      "type": "securestring",
       "metadata": {
         "description": "Required: the application secret for your administrative auth app"
       }
@@ -63,7 +63,7 @@
       }
     },
     "studentClientSecret": {
-      "type": "string",
+      "type": "securestring",
       "metadata": {
         "description": "Required: the application secret for your student auth app"
       }

@@ -39,14 +39,6 @@ namespace AzureADLabDNSControl.Controllers.api
             IEnumerable<DomainResourceGroup> RGs;
             RGs = await ((_isSiteAdmin) ? _repo.GetItemsAsync() : _repo.GetItemsAsync(g => g.OwnerAlias == User.Identity.Name));
 
-            //foreach (var rg in RGs)
-            //{
-            //    var group = Settings.DomainGroups.SingleOrDefault(g => g.DnsZoneRG == rg.DnsZoneRG);
-            //    if (group != null && rg.DomainList.Count == 0)
-            //    {
-            //        rg.DomainList.AddRange(group.DomainList);
-            //    }
-            //}
             return RGs;
         }
 

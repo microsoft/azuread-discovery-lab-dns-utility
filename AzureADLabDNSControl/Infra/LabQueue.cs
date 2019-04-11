@@ -1,6 +1,6 @@
 ﻿using Lab.Common;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Queue;
+using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.Queue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +50,7 @@ namespace Lab.Infra
         {
             // Get the message from the queue and update the message contents.
             CloudQueueMessage message = queue.GetMessage();
-            message.SetMessageContent(msg);
+            message.SetMessageContent2(msg, false);
 
             queue.UpdateMessage(message,
                 TimeSpan.FromSeconds(60.0),  // Make it visible for another 60 seconds.

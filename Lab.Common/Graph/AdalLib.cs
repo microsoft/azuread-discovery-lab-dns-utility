@@ -64,7 +64,7 @@ namespace Graph
 
                 return result.AccessToken;
             }
-            catch (AdalSilentTokenAcquisitionException ex)
+            catch (AdalSilentTokenAcquisitionException)
             {
                 return null;
             }

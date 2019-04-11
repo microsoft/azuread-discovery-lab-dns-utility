@@ -32,7 +32,7 @@ namespace DocDBLib
                     }
                     throw ex;
                 }
-                catch(Exception ex)
+                catch
                 {
                     try
                     {

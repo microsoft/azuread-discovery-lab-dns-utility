@@ -50,7 +50,6 @@ namespace Lab.Common.Repo
                 var arr = lab.DnsZoneRG.Split(':');
                 lab.AzureSubscriptionId = arr[0];
                 lab.DnsZoneRG = arr[1];
-                //var group = Settings.DomainGroups.Single(d => d.DnsZoneRG == lab.DnsZoneRG);
                 var group = (await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync(g => g.DnsZoneRG == lab.DnsZoneRG)).SingleOrDefault();
 
                 lab.AzureSubscriptionId = group.AzureSubscriptionId;
@@ -186,6 +185,10 @@ namespace Lab.Common.Repo
                         counter--;
                     }
                 }
+
+                //update lab
+                lab.State = LabState.Ready;
+                await DocDBRepo.DB<LabSettings>.UpdateItemAsync(lab);
             }
             catch (Exception ex)
             {

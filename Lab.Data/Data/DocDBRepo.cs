@@ -207,7 +207,7 @@ namespace DocDBLib
                 }
                 catch (Exception ex)
                 {
-                    throw;
+                    throw ex;
                 }
             }
 

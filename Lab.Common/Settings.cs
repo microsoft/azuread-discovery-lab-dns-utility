@@ -31,7 +31,7 @@ namespace Lab.Common
 
         public static string GraphResource { get; set; }
 
-        public static async Task Init(NameValueCollection appSettings, string appRoot)
+        public static void Init(NameValueCollection appSettings, string appRoot)
         {
             AppRootPath = appRoot;
 
@@ -64,24 +64,6 @@ namespace Lab.Common
             GraphResource = "https://graph.microsoft.com";
 
             var client = DocDBRepo.Initialize().Result;
-
-            ////DNS config
-            //DomainGroups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
-
-            //using (var dns = new DnsAdmin())
-            //{
-            //    foreach (var group in DomainGroups)
-            //    {
-            //        group.DomainList = new List<string>();
-            //        await dns.InitAsync();
-            //        dns.SetClient(group);
-            //        var zones = await dns.GetZoneList();
-            //        foreach (var zone in zones)
-            //        {
-            //            group.DomainList.Add(zone.Name);
-            //        }
-            //    }
-            //}
         }
     }
 }
