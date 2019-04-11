@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web;
 
 namespace Lab.Common.Infra
@@ -33,7 +34,9 @@ namespace Lab.Common.Infra
 
         public RequestDTO(HttpRequestMessage request)
         {
-            Form = request.Content.ReadAsFormDataAsync().Result;
+            if (request.Content.Headers.ContentType.MediaType.Contains("multipart")) {
+                Form = request.Content.ReadAsFormDataAsync().Result;
+            }
             Url = request.RequestUri;
             IPAddress = request.GetClientIpAddress();
             UrlReferrer = request.Headers.Referrer;

@@ -38,33 +38,39 @@
         "description": "Describes plan's instance count (how many distinct web servers will be deployed in the farm) - this can be changed after deployment"
       }
     },
-    "tenantDomainName": {
-      "type": "string",
-      "metadata": {
-        "description": "Required: the name of the Azure Active Directory tenant that will host your auth apps (like contoso.com, or contoso.onmicrosoft.com)"
-      }
-    },
     "tenantId": {
       "type": "string",
       "metadata": {
         "description": "Required: the GUID of the tenant above"
       }
     },
-    "clientId": {
+    "adminClientId": {
       "type": "string",
       "metadata": {
         "description": "Required: the application ID GUID of your administrative auth app (see Readme for details)"
       }
     },
-    "clientSecret": {
+    "adminClientSecret": {
       "type": "string",
       "metadata": {
         "description": "Required: the application secret for your administrative auth app"
       }
     },
+    "studentClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required: the application ID GUID of your student auth app (see Readme for details)"
+      }
+    },
+    "studentClientSecret": {
+      "type": "string",
+      "metadata": {
+        "description": "Required: the application secret for your student auth app"
+      }
+    },
     "repoURL": {
       "type": "string",
-      "defaultValue": "https://github.com/Microsoft/aad-hybrid-lab.git",
+      "defaultValue": "https://github.com/Microsoft/azuread-discovery-lab-dns-utility.git",
       "metadata": {
         "description": "The path to the application source files on GitHub"
       }
@@ -81,7 +87,11 @@
     "webSiteName": "[concat(tolower(parameters('hostingPlanName')), '-web', uniqueString(resourceGroup().id))]",
     "docDbHost": "[concat(tolower(parameters('hostingPlanName')), '-db', uniqueString(resourceGroup().id))]",
     "docDbName": "Lab",
-    "docDbCollection": "LabItems"
+    "docDbCollection": "LabItems",
+    "QueueAccountName": "[concat('queue', tolower(resourceGroup().name))]",
+    "QueueType": "Standard_LRS",
+    "labQueueName": "labqueue",
+    "QueueAccountId": "[concat(resourceGroup().id,'/providers/Microsoft.Storage/storageAccounts/', variables('QueueAccountName'))]"
   },
   "resources": [
     {
@@ -103,6 +113,20 @@
         "name": "[variables('docDbHost')]"
       },
       "dependsOn": []
+    },
+    {
+      "name": "[variables('QueueAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-01-01",
+      "sku": {
+        "name": "[variables('QueueType')]"
+      },
+      "dependsOn": [],
+      "tags": {
+        "displayName": "StorageQueue"
+      },
+      "kind": "Storage"
     },
     {
       "apiVersion": "2015-08-01",
@@ -131,7 +155,8 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-        "[variables('docDbHost')]"
+        "[variables('docDbHost')]",
+        "[variables('QueueAccountName')]"
       ],
       "properties": {
         "name": "[variables('webSiteName')]",
@@ -140,20 +165,32 @@
           "phpVersion": "",
           "appSettings": [
             {
+              "Name": "ida:TenantId",
+              "Value": "[parameters('tenantId')]"
+            },
+            {
               "Name": "ida:ClientId",
-              "Value": "[parameters('clientId')]"
+              "Value": "[parameters('studentClientId')]"
             },
             {
               "Name": "ida:ClientSecret",
-              "Value": "[parameters('clientSecret')]"
+              "Value": "[parameters('studentClientSecret')]"
             },
             {
-              "Name": "ida:Tenant",
-              "Value": "[parameters('tenantDomainName')]"
+              "Name": "LinkAdminClientId",
+              "Value": "[parameters('adminClientId')]"
             },
             {
-              "Name": "ida:TenantId",
-              "Value": "[parameters('tenantId')]"
+              "Name": "LinkAdminSecret",
+              "Value": "[parameters('adminClientSecret')]"
+            },
+            {
+              "Name": "StorageConnectionString",
+              "Value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('QueueAccountName'),';AccountKey=',concat(listKeys(variables('QueueAccountId'),'2015-05-01-preview').key1))]"
+            },
+            {
+              "Name": "LabQueueName",
+              "Value": "[variables('labQueueName')]"
             },
             {
               "Name": "DocDBUri",
@@ -170,6 +207,14 @@
             {
               "Name": "DocDBCollection",
               "Value": "[variables('docDbCollection')]"
+            },
+            {
+              "Name": "DocDBRegions",
+              "Value": "[resourceGroup().location]"
+            },
+            {
+              "Name": "WebJobDebugWait",
+              "Value": "0"
             }
           ]
         }

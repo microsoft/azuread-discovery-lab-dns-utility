@@ -4,20 +4,26 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
-using AzureADLabDNSControl.Infra;
+using Infra.Auth;
 using DocDBLib;
 using Graph;
 using Lab.Common;
-using Lab.Common.Infra;
 using Lab.Data.Models;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Notifications;
-using Microsoft.Owin.Security.OpenIdConnect;
 
 namespace AzureADLabDNSControl
 {
     public partial class Startup
     {
+        internal static async Task AuthInit(AuthorizationCodeReceivedNotification ctx)
+        {
+            var hctx =
+                (HttpContextWrapper)
+                    ctx.OwinContext.Environment.Single(e => e.Key == "System.Web.HttpContextBase").Value;
+            await AuthInit(hctx, (ClaimsIdentity)ctx.Request.User.Identity);
+        }
+
         internal static async Task AuthInit(CookieResponseSignInContext ctx)
         {
             var hctx =
@@ -38,7 +44,7 @@ namespace AzureADLabDNSControl
                 //call Graph to get additional custom claims
                 var tenantId = AdalLib.GetUserTenantId(identity);
                 var tenantName = AdalLib.GetUserUPNSuffix(identity);
-                var oid = identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
+                var oid = identity.GetClaim(TokenCacheClaimTypes.ObjectId);
                 var team = (await DocDBRepo.DB<DomAssignment>.GetItemsAsync(d => d.AssignedTenantName == tenantName)).FirstOrDefault();
 
                 //var control = await AADLinkControl.CreateAsync(tenantId, hctx);

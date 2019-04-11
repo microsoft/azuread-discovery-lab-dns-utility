@@ -1,4 +1,6 @@
 ﻿using Graph;
+using Graph.Models;
+using Infra.Auth;
 using Lab.Common;
 using Lab.Common.Infra;
 using Lab.Common.Repo;
@@ -17,14 +19,14 @@ namespace AzureADLabDNSControl.Controllers.api
     public class TeamApiController : ApiController
     {
         [HttpGet]
-        public async Task<AdalResponse<Graph.Models.Domain>> CheckDomainValidation()
+        public async Task<AdalResponse<Domain>> CheckDomainValidation()
         {
             var labCode = User.Identity.GetClaim(CustomClaimTypes.LabCode);
             var teamCode = User.Identity.GetClaim(CustomClaimTypes.TeamCode);
 
             var team = await LabRepo.GetDomAssignment(labCode, teamCode);
             var tenantId = AdalLib.GetUserTenantId(User.Identity);
-            var hctx = new HttpContextWrapper(System.Web.HttpContext.Current);
+            var hctx = new HttpContextWrapper(HttpContext.Current);
 
             var control = await AADLinkControl.CreateAsync(tenantId, hctx);
             return await control.GetDomain(team.TeamAssignment.DomainName);

@@ -17,11 +17,27 @@ namespace AzureADLabDNSControl.Controllers.api
     [AdminAuthorize(Roles = CustomRoles.LabAdmin)]
     public class LabController : ApiController
     {
+        private RGRepo _repo;
+
+        public LabController()
+        {
+            _repo = new RGRepo();
+
+        }
+
         //Lab Operations
         [HttpPost]
         public async Task<IEnumerable<LabDTO>> AddLab(LabSettings lab)
         {
             var res = await LabRepo.AddNewLab(lab, User.Identity.Name);
+            SetQueue(lab.Id);
+            return MapLabs(res);
+        }
+
+        [HttpPost]
+        public async Task<IEnumerable<LabDTO>> UpdateLab(LabSettings lab)
+        {
+            var res = await LabRepo.UpdateLab(lab, User.Identity.Name);
             SetQueue(lab.Id);
             return MapLabs(res);
         }
@@ -70,13 +86,6 @@ namespace AzureADLabDNSControl.Controllers.api
         {
             var res = await LabRepo.GetLabAndSettings(id);
             return res;
-        }
-
-        [HttpPost]
-        public async Task<IEnumerable<LabDTO>> UpdateLab(LabSettings lab)
-        {
-            var res = await LabRepo.UpdateLab(lab, User.Identity.Name);
-            return MapLabs(res);
         }
 
         [HttpPost]
@@ -193,7 +202,9 @@ namespace AzureADLabDNSControl.Controllers.api
                 //remove zone record from zone
                 using (var dns = new DnsAdmin())
                 {
-                    var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
+                    //var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
+                    var domGroup = await _repo.GetGroup(data.Lab.AzureSubscriptionId, data.Lab.DnsZoneRG);
+
                     await dns.InitAsync();
                     dns.SetClient(domGroup);
                     await dns.ClearTxtRecord(team.TeamAssignment.DomainName);

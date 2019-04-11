@@ -11,14 +11,91 @@ using System.Net;
 using System.IO;
 using System.Security.Principal;
 using Lab.Common;
+using Infra.Auth;
+using System.Web.Http;
+using System.Web.Http.Controllers;
 
 namespace Graph
 {
     public static class AdalLib
     {
         public static string GraphApiVersion = "v1.0";
-        const String SERVICE_UNAVAILABLE = "temporarily_unavailable";
-        const String INTERACTION_REQUIRED = "interaction_required";
+        const string SERVICE_UNAVAILABLE = "temporarily_unavailable";
+        const string INTERACTION_REQUIRED = "interaction_required";
+
+        public static async Task<string> GetAccessToken(ClaimsIdentity principal, HttpContextBase hctx, string resource)
+        {
+            var oid = principal.FindFirst(TokenCacheClaimTypes.ObjectId)
+                        .Value;
+            var fqdn = Utils.GetFQDN(hctx.Request);
+
+            return await GetAccessToken(oid, resource, fqdn);
+        }
+
+        public static async Task<string> GetAccessToken(string oid, HttpControllerContext hctx, string resource)
+        {
+            var fqdn = Utils.GetFQDN(hctx.RequestContext);
+            
+            return await GetAccessToken(oid, resource, fqdn);
+        }
+
+        public static async Task<string> GetAccessToken(string oid, string resource, string fqdn)
+        {
+            AuthenticationContext authContext = null;
+            AuthenticationResult result = null;
+            ClientCredential credential = null;
+            string nameId = "";
+
+            try
+            {
+
+                // Get the access token from the cache
+                nameId = oid;
+
+                authContext = new AuthenticationContext(Settings.AdminAuthority,
+                    new AdalCosmosTokenCache(nameId, fqdn));
+                if (authContext.TokenCache.Count == 0)
+                {
+                    return "";
+                }
+
+                credential = new ClientCredential(Settings.LabAdminClientId, Settings.LabAdminSecret);
+                result = await authContext.AcquireTokenSilentAsync(resource, credential, new UserIdentifier(nameId, UserIdentifierType.UniqueId));
+
+                return result.AccessToken;
+            }
+            catch (AdalSilentTokenAcquisitionException ex)
+            {
+                return null;
+            }
+            catch (AdalServiceException ex)
+            {
+                if (ex.ErrorCode == "invalid_grant")
+                {
+                    return ex.Message;
+                }
+
+                if (ex.ErrorCode == INTERACTION_REQUIRED)
+                {
+                    HttpResponseMessage myMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.Forbidden, ReasonPhrase = INTERACTION_REQUIRED, Content = new StringContent(ex.Message) };
+                    throw new HttpResponseException(myMessage);
+                }
+            }
+            catch (AdalException ex)
+            {
+                if (ex.InnerException.GetType() == typeof(AdalClaimChallengeException))
+                {
+                    return null;
+                }
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                await Logging.WriteDebugInfoToErrorLog("Error retrieving user access token", ex);
+                return null;
+            }
+            return null;
+        }
 
         public static async Task<string> GetAccessToken(HttpContextBase hctx, string tenantId)
         {
@@ -34,6 +111,7 @@ namespace Graph
             var data = await GetResourceAsync(request, tenantId, hctx, verb, body);
             return new AdalResponse<T>(data);
         }
+
         public static async Task<AdalResponse> GetResourceAsync(string request, string accessToken, HttpMethod verb = null, string body = null)
         {
             var res = new AdalResponse
@@ -124,9 +202,9 @@ namespace Graph
         /// <returns></returns>
         public static string GetUserTenantId(IIdentity identity)
         {
-            if (identity.HasClaim(CustomClaimTypes.TenantId))
+            if (identity.HasClaim(TokenCacheClaimTypes.TenantId))
             {
-                return identity.GetClaim(CustomClaimTypes.TenantId);
+                return identity.GetClaim(TokenCacheClaimTypes.TenantId);
             }
 
             var domain = GetUserUPNSuffix(identity);

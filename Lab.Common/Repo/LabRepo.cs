@@ -14,17 +14,20 @@ namespace Lab.Common.Repo
 {
     public static class LabRepo
     {
-        public static async Task<IEnumerable<DomainGroupDTO>> GetLabStats()
+        public static async Task<IEnumerable<DomainGroupDTO>> GetLabStats(string userName)
         {
             var list = new List<DomainGroupDTO>();
-
-            foreach (var group in Settings.DomainGroups)
+            var groups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
+            foreach (var group in groups)
             {
-                list.Add(new DomainGroupDTO
+                if (group.Shared || group.OwnerAlias == userName)
                 {
-                    DnsZoneRG = group.DnsZoneRG,
-                    AzureSubscriptionId = group.AzureSubscriptionId
-                });
+                    list.Add(new DomainGroupDTO
+                    {
+                        DnsZoneRG = group.DnsZoneRG,
+                        AzureSubscriptionId = group.AzureSubscriptionId
+                    });
+                }
             }
 
             var labs = await DocDBRepo.DB<LabSettings>.GetItemsAsync();
@@ -47,7 +50,9 @@ namespace Lab.Common.Repo
                 var arr = lab.DnsZoneRG.Split(':');
                 lab.AzureSubscriptionId = arr[0];
                 lab.DnsZoneRG = arr[1];
-                var group = Settings.DomainGroups.Single(d => d.DnsZoneRG == lab.DnsZoneRG);
+                //var group = Settings.DomainGroups.Single(d => d.DnsZoneRG == lab.DnsZoneRG);
+                var group = (await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync(g => g.DnsZoneRG == lab.DnsZoneRG)).SingleOrDefault();
+
                 lab.AzureSubscriptionId = group.AzureSubscriptionId;
                 LabSettings newLab = await SetLabSettingsAsync(lab);
 
@@ -59,13 +64,35 @@ namespace Lab.Common.Repo
             }
         }
 
-        public static async Task AddLabAssignments(LabSettings lab)
+        public static async Task UpdateLabAssignments(LabSettings lab)
         {
-            //lab.AttendeeCount
-            var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == lab.AzureSubscriptionId && d.DnsZoneRG == lab.DnsZoneRG);
+            var currLab = await GetDomAssignments(lab.Id);
+            var currCount = currLab.Count();
+            var newCount = lab.AttendeeCount;
+            if (newCount > currCount)
+            {
+                //adding assignments
+                await AddLabAssignments(lab, currCount);
+            }
+            else if (newCount < currCount)
+            {
+                //removing assignments
+                await RemoveLabAssignments(lab, lab.AttendeeCount);
+            }
+            else
+            {
+                //sanity check - no change (shouldn't be here)
+                //update lab
+                lab.State = LabState.Ready;
+                await DocDBRepo.DB<LabSettings>.UpdateItemAsync(lab);
+            }
+        }
+
+        public static async Task AddLabAssignments(LabSettings lab, int counter = 0)
+        {
+            var domGroup = (await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync(g => g.AzureSubscriptionId == lab.AzureSubscriptionId &&  g.DnsZoneRG == lab.DnsZoneRG)).SingleOrDefault();
+
             var domains = domGroup.DomainList;
-            //var city = lab.City.ToLower().Replace(" ", "").Replace(".", "").Replace("-", "");
-            //city += (lab.LabDate.Month.ToString() + lab.LabDate.Day.ToString());
             string auth = null;
 
             using (var dns = new DnsAdmin())
@@ -73,7 +100,6 @@ namespace Lab.Common.Repo
                 await dns.InitAsync();
                 dns.SetClient(domGroup);
                 var itemsPerDomain = (lab.AttendeeCount / domains.Count()) + 1;
-                var counter = 0;
                 foreach (var dom in domains)
                 {
                     if (counter == lab.AttendeeCount)
@@ -121,30 +147,45 @@ namespace Lab.Common.Repo
         }
 
         /// <summary>
+        /// Called from web job after assignments removed, deletes lab
+        /// </summary>
+        /// <param name="lab"></param>
+        /// <returns></returns>
+        public static async Task DeleteLab(LabSettings lab)
+        {
+            //all zones and teams deleted, remove lab
+            await DocDBRepo.DB<LabSettings>.DeleteItemAsync(lab);
+        }
+
+        /// <summary>
         /// called from the web job, removes assignments then deletes the lab
         /// </summary>
         /// <returns></returns>
-        public static async Task RemoveLabAssignments(LabSettings lab)
+        public static async Task RemoveLabAssignments(LabSettings lab, int endCount = 0)
         {
             var assignments = await GetDomAssignments(lab.Id);
-
+            var counter = assignments.Count();
             try
             {
-                var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == lab.AzureSubscriptionId && d.DnsZoneRG == lab.DnsZoneRG);
-                
+                var domGroup = (await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync(g => g.AzureSubscriptionId == lab.AzureSubscriptionId && g.DnsZoneRG == lab.DnsZoneRG)).SingleOrDefault();
+
                 using (var dns = new DnsAdmin())
                 {
                     await dns.InitAsync();
                     dns.SetClient(domGroup);
                     foreach (var item in assignments)
                     {
+                        if (counter == endCount)
+                        {
+                            return;
+                        }
+
                         await dns.RemoveChildZone(item.ParentZone, item.TeamName, item.DomainName);
                         await DocDBRepo.DB<DomAssignment>.DeleteItemAsync(item);
+
+                        counter--;
                     }
                 }
-
-                //all zones and teams deleted, remove lab
-                await DocDBRepo.DB<LabSettings>.DeleteItemAsync(lab);
             }
             catch (Exception ex)
             {
@@ -233,6 +274,7 @@ namespace Lab.Common.Repo
         #region Updates
         public static async Task<IEnumerable<LabSettings>> UpdateLab(LabSettings lab, string instructor)
         {
+            lab.State = LabState.QueuedToUpdate;
             await DocDBRepo.DB<LabSettings>.UpdateItemAsync(lab);
             return await GetLabs(instructor);
         }

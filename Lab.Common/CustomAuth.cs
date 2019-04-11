@@ -7,11 +7,8 @@ namespace Lab.Common
 {
     public static class CustomClaimTypes
     {
-        public const string IdentityProvider = "http://schemas.microsoft.com/identity/claims/identityprovider";
         public const string AuthType = "AuthType";
         public const string FullName = "FullName";
-        public const string ObjectIdentifier = "http://schemas.microsoft.com/identity/claims/objectidentifier";
-        public const string TenantId = "http://schemas.microsoft.com/identity/claims/tenantid";
         public const string LabCode = "LabCode";
         public const string TeamCode = "TeamCode";
         public const string TenantName = "TenantName";
@@ -22,6 +19,7 @@ namespace Lab.Common
         public const string LabAdmin = "LabAdmin";
         public const string LabUser = "LabUser";
         public const string LabUserAssigned = "LabUserAssigned";
+        public const string SiteAdmin = "SiteAdmin";
     }
 
     public static class CustomAuthType

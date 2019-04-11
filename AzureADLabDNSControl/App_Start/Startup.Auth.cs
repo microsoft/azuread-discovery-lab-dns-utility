@@ -16,6 +16,8 @@ using System.Security.Claims;
 using Graph;
 using Lab.Common;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Infra.Auth;
 
 namespace AzureADLabDNSControl
 {
@@ -48,6 +50,9 @@ namespace AzureADLabDNSControl
             };
 
             app.UseCookieAuthentication(cookieOptions);
+            Utils.Authority = Settings.AdminAuthority;
+            Utils.ClientId = Settings.LabAdminClientId;
+            Utils.ClientSecret = Settings.LabAdminSecret;
 
             OpenIdConnectAuthenticationOptions LabAdminOptions = new OpenIdConnectAuthenticationOptions
             {
@@ -57,6 +62,11 @@ namespace AzureADLabDNSControl
                 PostLogoutRedirectUri = "/",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
+                    AuthorizationCodeReceived = async (context) =>
+                    {
+                        await Utils.OnAuthorizationCodeReceived(context);
+                        await AuthInit(context);
+                    },
                     RedirectToIdentityProvider = (context) =>
                     {
                         string appBaseUrl = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase;

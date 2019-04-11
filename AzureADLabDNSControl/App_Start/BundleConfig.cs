@@ -39,6 +39,7 @@ namespace AzureADLabDNSControl
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
+                      "~/Content/bootstrap-theme.css",
                       "~/Content/bootstrap-datetimepicker.css",
                       "~/Content/jquery.gritter.css",
                       "~/Content/site.css"));

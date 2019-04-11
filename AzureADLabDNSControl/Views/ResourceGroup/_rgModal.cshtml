@@ -1,0 +1,94 @@
+﻿@model List<SelectListItem>
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="LabModalLabel" aria-hidden="true" id="NewRG">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="LabModalLabel">Add DNS Resource Group</h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingOne" data-toggle="collapse" data-target="#collapseOne" data-parent="#accordion">
+                            <h4 class="panel-title">Prerequisites</h4>
+                        </div>
+                        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                            <div class="panel-body">
+                                To use your own DNS zone(s):
+                                <ul>
+                                    <li>
+                                        Configure Azure DNS as authoritative for your zones and put them in their own resource group
+                                    </li>
+                                    <li>
+                                        Add the tag "RootLabDomain" with value "true" to EACH DNS ZONE in that resource group that you want
+                                        used in creation of your labs (new student lab zones will be created automatically - this tag
+                                        distinguishes between root zones and student zones)
+                                    </li>
+                                    <li>
+                                        Grant the Service Principle <b>"Discovery Days - Azure AD Lab"</b> the
+                                        "DNS Zone Contributor" RBAC assignment <b>to the resource group</b>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingTwo" data-toggle="collapse" data-target="#RGForm" data-parent="#accordion">
+                            <h4 class="panel-title">Add Resource...</h4>
+                        </div>
+                        <div id="RGForm" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-sm-7">
+                                        <label for="AzureSubscriptionId">Subscription ID</label>
+                                        <input class="form-control" id="AzureSubscriptionId" name="AzureSubscriptionId" />
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label for="DnsZoneRG">Resource Group</label>
+                                        <input class="form-control" id="DnsZoneRG" name="DnsZoneRG" />
+                                    </div>
+                                    <div class="col-sm-2 text-center">
+                                        <label for="Shared">Shared?</label>
+                                        <input type="checkbox" id="Shared" name="Shared" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 small">
+                                        "Shared" indicates if you are willing to share these domain names with other instructors/labs
+                                        (This will have an impact on your AIRS consumption, not on your ability to use the domain(s) yourself)
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <label for="DomainList">Domain List</label>
+                                        <div class="scrollWrap">
+                                            <table class="table table-striped" id="DomainList">
+                                                <tr>
+                                                    <th>Zone Name</th>
+                                                    <th>Tagged?</th>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12"><div id="verifyStatus"></div></div>
+                                    <div class="col-sm-12 text-center">
+                                        <button type="button" class="btn btn-primary" id="btnVerifyRG">Verify...</button>
+                                        <button type="button" disabled="disabled" class="btn btn-success" id="btnSaveRG">Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="col-sm-12">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

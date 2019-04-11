@@ -74,7 +74,9 @@ namespace Lab.Common.Infra
                 res.DbErrorId = await Logging.WriteDebugInfoToErrorLog("WebAPI Error", actionContext.Exception, req);
             });
             task.Wait();
-
+            res.ErrorMessage = actionContext.Exception.Message;
+            res.ErrorTitle = "API Error";
+            
             if (HttpContext.Current != null)
             {
                 HttpContext.Current.Items.Add("ErrorID", res.DbErrorId);

@@ -118,7 +118,10 @@ namespace Lab.Common.Infra
                 item.IPAddress = _request.IPAddress;
                 item.UserName = _request.UserName;
                 item.Referrer = (_request.UrlReferrer==null) ? "N/A" : _request.UrlReferrer.ToString();
-                item.PostData = WebUtility.HtmlEncode(_request.Form.ToString());
+                if (_request.Form != null)
+                {
+                    item.PostData = WebUtility.HtmlEncode(_request.Form.ToString());
+                }
                 item.QSData = WebUtility.HtmlEncode((_request.Url == null) ? "N/A" : _request.Url.OriginalString);
                 return await InsertErrorItem(item);
             }

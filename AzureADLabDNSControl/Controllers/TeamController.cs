@@ -1,5 +1,6 @@
 ﻿using AzureADLabDNSControl.Infra;
 using Graph;
+using Infra.Auth;
 using Lab.Common;
 using Lab.Common.Infra;
 using Lab.Common.Repo;
@@ -17,6 +18,13 @@ namespace AzureADLabDNSControl.Controllers
     [Authorize(Roles = CustomRoles.LabUser)]
     public class TeamController : Controller
     {
+        private RGRepo _repo;
+
+        public TeamController()
+        {
+            _repo = new RGRepo();
+        }
+
         // GET: Team
         public async Task<ActionResult> Index()
         {
@@ -83,7 +91,7 @@ namespace AzureADLabDNSControl.Controllers
             var tenantName = AdalLib.GetUserUPNSuffix(User.Identity);
             var tenantAdmin = User.Identity.GetClaim(ClaimTypes.Upn);
 
-            var oid = User.Identity.GetClaim(CustomClaimTypes.ObjectIdentifier);
+            var oid = User.Identity.GetClaim(TokenCacheClaimTypes.ObjectId);
 
             await LabRepo.UpdateTenantId(new TeamDTO { Lab = data.Lab, TeamAssignment = data.TeamAssignment }, tenantId, tenantName, tenantAdmin);
 
@@ -116,7 +124,9 @@ namespace AzureADLabDNSControl.Controllers
                 //updating DNS record
                 using (var dns = new DnsAdmin())
                 {
-                    var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
+                    //var domGroup = Settings.DomainGroups.Single(d => d.AzureSubscriptionId == data.Lab.AzureSubscriptionId && d.DnsZoneRG == data.Lab.DnsZoneRG);
+
+                    var domGroup = await _repo.GetGroup(data.Lab.AzureSubscriptionId, data.Lab.DnsZoneRG);
                     await dns.InitAsync();
                     dns.SetClient(domGroup);
                     await dns.SetTxtRecord(item.TxtRecord, data.TeamAssignment.DomainName);

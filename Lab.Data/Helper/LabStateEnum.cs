@@ -13,6 +13,8 @@ namespace Lab.Data.Helper
         Deleting,
         Queued,
         Error,
-        QueuedToDelete
+        QueuedToDelete,
+        QueuedToUpdate,
+        Updating
     }
 }

@@ -25,7 +25,9 @@ namespace AzureADLabDNSControl.Controllers.api
 
         public async Task<IEnumerable<System.Web.Mvc.SelectListItem>> GetDnsResourceGroups()
         {
-            var groups = await LabRepo.GetLabStats();
+            var groups = await LabRepo.GetLabStats(User.Identity.Name);
+            
+
             var data = SiteUtils.LoadListFromDictionary(groups.ToDictionary(o => o.AzureSubscriptionId + ":" + o.DnsZoneRG, o => o.DnsZoneRG + " (" + o.ZoneCount + " assigned)"));
             return data;
         }

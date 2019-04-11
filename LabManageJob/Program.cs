@@ -97,19 +97,19 @@ namespace LabManageJob
             var client = await DocDBRepo.Initialize();
 
             //DNS config
-            Settings.DomainGroups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
-            await _dns.InitAsync();
+            //Settings.DomainGroups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
+            //await _dns.InitAsync();
 
-            foreach(var group in Settings.DomainGroups)
-            {
-                _dns.SetClient(group);
-                group.DomainList = new List<string>();
-                var zones = await _dns.GetZoneList();
-                foreach (var zone in zones)
-                {
-                    group.DomainList.Add(zone.Name);
-                }
-            }
+            //foreach(var group in Settings.DomainGroups)
+            //{
+            //    _dns.SetClient(group);
+            //    group.DomainList = new List<string>();
+            //    var zones = await _dns.GetZoneList();
+            //    foreach (var zone in zones)
+            //    {
+            //        group.DomainList.Add(zone.Name);
+            //    }
+            //}
         }
     }
 }

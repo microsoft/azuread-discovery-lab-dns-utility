@@ -120,6 +120,7 @@
     <Compile Include="Models\LabSettingsDTO.cs" />
     <Compile Include="Models\LabSettingsFull.cs" />
     <Compile Include="Models\TeamAuthentication.cs" />
+    <Compile Include="Models\UserTokenCach.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>

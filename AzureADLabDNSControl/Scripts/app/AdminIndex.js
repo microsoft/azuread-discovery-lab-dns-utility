@@ -173,9 +173,10 @@
         });
     }
 
-    function saveLab(data) {
+    function saveLab() {
         var action = ($("#LabModalLabel").html() == "Add Lab") ? "AddLab" : "UpdateLab";
         var data = {};
+
         if (action == "AddLab") {
             data = {
                 "primaryInstructor": $("#Instructor").val(),
@@ -217,7 +218,10 @@
         $("#City").val((data == null) ? "" : data.city);
         if (data != null) {
             $('#Instructors').tokenfield('setTokens', data.instructors);
+            $("#DomainGroup").attr("disabled", "disabled");
+            $("#AttendeeCount").val(data.attendeeCount);
         } else {
+            $("#DomainGroup").removeAttr("disabled");
             $("#Instructors").tokenfield('setTokens', []);
         }
 
@@ -326,6 +330,18 @@
                 break;
             case 5:
                 res = "Pending Delete";
+                if (numCreated != null) {
+                    res += " (" + ((totalAssigned - numCreated) + "/" + totalAssigned + ")...");
+                }
+                break;
+            case 6:
+                res = "Pending Update";
+                if (numCreated != null) {
+                    res += " (" + numCreated + "/" + totalAssigned + ")...";
+                }
+                break;
+            case 7:
+                res = "Updating";
                 if (numCreated != null) {
                     res += " (" + ((totalAssigned - numCreated) + "/" + totalAssigned + ")...");
                 }

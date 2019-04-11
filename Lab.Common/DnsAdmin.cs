@@ -56,18 +56,20 @@ namespace Lab.Common
 
         public async Task<IEnumerable<Zone>> GetZoneList()
         {
+            var result = new List<Zone>();
             try
             {
                 CheckInit();
 
                 var res = await _client.Zones.ListByResourceGroupAsync(_domainRG.DnsZoneRG);
-                var res2 = res.Where(d => d.Tags.Any(t => t.Key == "RootLabDomain" && t.Value == "true")).ToList();
-                return res2;
+                result = res.Where(d => d.Tags.Any(t => t.Key == "RootLabDomain" && t.Value == "true")).ToList();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                await Logging.WriteDebugInfoToErrorLog("Error getting zone list during startup", ex);
             }
+            
+            return result;
         }
 
         public async Task ResetAllZones()

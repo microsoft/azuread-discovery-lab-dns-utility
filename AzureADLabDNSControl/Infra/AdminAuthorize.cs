@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Lab.Common;
+using Microsoft.Owin.Security;
+using System;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Routing;
 
 namespace AzureADLabDNSControl.Infra
 {
@@ -16,15 +15,11 @@ namespace AzureADLabDNSControl.Infra
         /// <param name="filterContext"></param>
         public override void OnAuthorization(AuthorizationContext filterContext)
         {
-            var currentUser = filterContext.HttpContext.User.Identity;
-            var redir = new RouteValueDictionary
-                {
-                    { "controller", "account" }, { "action", "signinadmin" }, { "area", "" }
-                };
-
-            if (!currentUser.IsAuthenticated)
+            if (!filterContext.HttpContext.User.Identity.IsAuthenticated)
             {
-                filterContext.Result = new RedirectToRouteResult(redir);
+                var redir = filterContext.HttpContext.Request.Url.OriginalString;
+                filterContext.HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties { RedirectUri = redir },
+                    CustomAuthType.LabAdmin);
                 return;
             }
         }

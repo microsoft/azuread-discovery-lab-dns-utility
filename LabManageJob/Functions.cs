@@ -36,11 +36,19 @@ namespace LabManageJob
                         lab.State = LabState.Deleting;
                         await LabRepo.UpdateLab(lab, data.UserName);
                         await LabRepo.RemoveLabAssignments(lab);
+
+                        //all zones and teams deleted, remove lab
+                        await LabRepo.DeleteLab(lab);
                         break;
                     case LabState.Queued:
                         lab.State = LabState.Creating;
                         await LabRepo.UpdateLab(lab, data.UserName);
                         await LabRepo.AddLabAssignments(lab);
+                        break;
+                    case LabState.QueuedToUpdate:
+                        lab.State = LabState.Updating;
+                        await LabRepo.UpdateLab(lab, data.UserName);
+                        await LabRepo.UpdateLabAssignments(lab);
                         break;
                     default:
                         return;

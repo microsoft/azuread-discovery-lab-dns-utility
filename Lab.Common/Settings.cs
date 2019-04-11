@@ -1,4 +1,5 @@
 ﻿using DocDBLib;
+using Infra.Auth;
 using Lab.Data.Models;
 using Newtonsoft.Json;
 using System;
@@ -14,7 +15,7 @@ namespace Lab.Common
     public static class Settings
     {
         public static string AppRootPath { get; set; }
-        public static IEnumerable<DomainResourceGroup> DomainGroups { get; set; }
+        //public static IEnumerable<DomainResourceGroup> DomainGroups { get; set; }
 
         public static string StorageConnectionString { get; set; }
         public static string LabQueueName { get; set; }
@@ -55,6 +56,7 @@ namespace Lab.Common
             LabUserClientId = appSettings["LinkAdminClientId"];
             LabUserSecret = appSettings["LinkAdminSecret"];
             UserAuthority = string.Format(Authority, "common");
+            AESEncryption.Password = LabAdminSecret;
 
             StorageConnectionString = appSettings["StorageConnectionString"];
             LabQueueName = appSettings["LabQueueName"];
@@ -63,23 +65,23 @@ namespace Lab.Common
 
             var client = DocDBRepo.Initialize().Result;
 
-            //DNS config
-            DomainGroups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
+            ////DNS config
+            //DomainGroups = await DocDBRepo.DB<DomainResourceGroup>.GetItemsAsync();
 
-            using (var dns = new DnsAdmin())
-            {
-                foreach (var group in DomainGroups)
-                {
-                    group.DomainList = new List<string>();
-                    await dns.InitAsync();
-                    dns.SetClient(group);
-                    var zones = await dns.GetZoneList();
-                    foreach (var zone in zones)
-                    {
-                        group.DomainList.Add(zone.Name);
-                    }
-                }
-            }
+            //using (var dns = new DnsAdmin())
+            //{
+            //    foreach (var group in DomainGroups)
+            //    {
+            //        group.DomainList = new List<string>();
+            //        await dns.InitAsync();
+            //        dns.SetClient(group);
+            //        var zones = await dns.GetZoneList();
+            //        foreach (var zone in zones)
+            //        {
+            //            group.DomainList.Add(zone.Name);
+            //        }
+            //    }
+            //}
         }
     }
 }
