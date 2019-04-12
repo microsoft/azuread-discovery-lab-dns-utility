@@ -10,10 +10,17 @@ $(function () {
     $("#btnClose").on("click", loadItem);
 
     $('#NewRG').on('hide.bs.modal', function () {
+        if (typeof ($("#btnSaveRG").attr("disabled")) == "undefined") {
+            if (!confirm("Do you want to cancel without saving your resource group?")) {
+                return false;
+            }
+        }
+
         $("#AzureSubscriptionId").val("");
-        $("#DNSZoneRG").val("");
+        $("#DnsZoneRG").val("");
         $("#Shared")[0].checked = false;
         $("#DomainList tr:gt(0)").remove();
+        $("#verifyStatus").removeClass().html("");
         $("#collapseOne").collapse('show');
         $("#RGForm").collapse('hide');
     });
@@ -83,6 +90,8 @@ $(function () {
         });
     }
     function loadItem(item) {
+        if (typeof(item.id) == "undefined") item = null;
+
         $("#groupDetailsInfo").show();
         $("#groupDetails").hide();
 
@@ -137,7 +146,7 @@ $(function () {
             $("#btnSaveRG").attr("disabled", "disabled");
             $("#verifyStatus").removeClass().addClass("pending");
 
-            var zones = res.value;
+            var zones = res;
             if (zones == null) {
                 $("#verifyStatus").removeClass().addClass("failure").html("Resource group not found. Review and confirm the prerequisites.");
                 return;

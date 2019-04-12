@@ -73,6 +73,11 @@ namespace Infra.Auth
             if (!res.Successful)
             {
                 var err = JsonConvert.DeserializeObject<DomainError>(res.ResponseContent);
+                if (err.Error.Code == "AuthorizationFailed")
+                {
+                    //let the client notice the null return value and notify the user
+                    return null;
+                }
                 throw new Exception(string.Format("{0}: {1}", err.Error.Code, err.Error.Message));
             }
             var zones = JsonConvert.DeserializeObject<DnsZones>(res.ResponseContent);
