@@ -33,7 +33,10 @@ namespace Lab.Common.Repo
             var labs = await DocDBRepo.DB<LabSettings>.GetItemsAsync();
             foreach(var lab in labs)
             {
-                list.Single(d => d.DnsZoneRG == lab.DnsZoneRG).ZoneCount += lab.AttendeeCount;
+                var item = list.SingleOrDefault(d => d.DnsZoneRG == lab.DnsZoneRG);
+                if (item != null) {
+                    item.ZoneCount += lab.AttendeeCount;
+                }
             }
             return list;
         }
@@ -251,6 +254,12 @@ namespace Lab.Common.Repo
             today = today.AddMinutes(offset * -1).Date;
             var res = await DocDBRepo.DB<LabSettings>.GetItemsAsync(d => d.LabDate == today);
             return res;
+        }
+
+        public static async Task<IEnumerable<LabSettings>> GetLabs()
+        {
+            var res = await DocDBRepo.DB<LabSettings>.GetItemsAsync();
+            return res.OrderBy(l => l.LabDate).ToList();
         }
 
         public static async Task<IEnumerable<LabSettings>> GetLabs(string instructor)

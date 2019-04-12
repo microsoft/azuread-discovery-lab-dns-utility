@@ -1,4 +1,5 @@
 ﻿using AzureADLabDNSControl.Infra;
+using Infra.Auth;
 using Lab.Common;
 using Lab.Common.Infra;
 using Lab.Common.Repo;
@@ -11,18 +12,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 
 namespace AzureADLabDNSControl.Controllers.api
 {
     [AdminAuthorize(Roles = CustomRoles.LabAdmin)]
     public class LabController : ApiController
     {
+        private bool _isSiteAdmin;
         private RGRepo _repo;
 
-        public LabController()
+        protected override void Initialize(HttpControllerContext controllerContext)
         {
+            _isSiteAdmin = User.Identity.IsInRole(CustomRoles.SiteAdmin);
             _repo = new RGRepo();
 
+            base.Initialize(controllerContext);
         }
 
         //Lab Operations
@@ -72,8 +77,10 @@ namespace AzureADLabDNSControl.Controllers.api
 
         public async Task<IEnumerable<LabDTO>> GetLabs()
         {
-            var res = await LabRepo.GetLabs(User.Identity.Name);
-            return MapLabs(res);
+            IEnumerable<LabSettings> labs;
+            labs = await ((_isSiteAdmin) ? LabRepo.GetLabs() : LabRepo.GetLabs(User.Identity.Name));
+
+            return MapLabs(labs);
         }
 
         public async Task<IEnumerable<DateTime>> GetLabDates()
