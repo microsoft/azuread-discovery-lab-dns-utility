@@ -42,6 +42,7 @@ $(function () {
         data.DomainList = $("#DomainList").data("zones");
 
         SiteUtil.AjaxCall("/api/rgapi/saverg", JSON.stringify(data), function (res) {
+            $("#btnSaveRG").attr("disabled", "disabled");
             $("#NewRG").modal("hide");
             loadItems(res);
         }, "POST");
@@ -90,7 +91,7 @@ $(function () {
         });
     }
     function loadItem(item) {
-        if (typeof(item.id) == "undefined") item = null;
+        if (item !=null && typeof(item.id) == "undefined") item = null;
 
         $("#groupDetailsInfo").show();
         $("#groupDetails").hide();

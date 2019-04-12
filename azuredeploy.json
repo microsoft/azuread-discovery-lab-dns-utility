@@ -170,19 +170,19 @@
             },
             {
               "Name": "ida:ClientId",
-              "Value": "[parameters('studentClientId')]"
-            },
-            {
-              "Name": "ida:ClientSecret",
-              "Value": "[parameters('studentClientSecret')]"
-            },
-            {
-              "Name": "LinkAdminClientId",
               "Value": "[parameters('adminClientId')]"
             },
             {
-              "Name": "LinkAdminSecret",
+              "Name": "ida:ClientSecret",
               "Value": "[parameters('adminClientSecret')]"
+            },
+            {
+              "Name": "LinkAdminClientId",
+              "Value": "[parameters('studentClientId')]"
+            },
+            {
+              "Name": "LinkAdminSecret",
+              "Value": "[parameters('studentClientSecret')]"
             },
             {
               "Name": "StorageConnectionString",

@@ -311,6 +311,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Infra\AdminAuthorize.cs" />
+    <Compile Include="Infra\ErrorInfo.cs" />
     <Compile Include="Infra\LabQueue.cs" />
     <Compile Include="Infra\SiteUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

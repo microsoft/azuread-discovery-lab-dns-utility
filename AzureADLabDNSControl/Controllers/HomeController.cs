@@ -37,11 +37,7 @@ namespace AzureADLabDNSControl.Controllers
                 return RedirectToAction("Index", "Team");
             }
 
-            //todo: setup a web job to check for a lab and set it in a static var daily
-            //var lab = await LabRepo.GetTodaysLab(tzo);
-           // var isLive = (lab.Count() == 1);
-            //ViewBag.IsLive = isLive;
-            //var data = (isLive) ? lab.Single() : null;
+            ViewBag.Error = Request.QueryString["msg"];
             return View();
         }
 
@@ -57,6 +53,7 @@ namespace AzureADLabDNSControl.Controllers
         {
             return View();
         }
+
         public ActionResult Error()
         {
             return View();
@@ -99,10 +96,5 @@ namespace AzureADLabDNSControl.Controllers
 
             return View();
         }
-    }
-    public class ErrorInfo
-    {
-        public string ErrorHeader { get; set; }
-        public string Error { get; set; }
     }
 }

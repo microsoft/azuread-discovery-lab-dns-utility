@@ -5,18 +5,8 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
 using System.Threading.Tasks;
 using Microsoft.Owin.Security.Notifications;
-using Microsoft.IdentityModel.Protocols;
-using System.Web.Mvc;
-using System.Configuration;
-using System.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens;
-using System.Web;
-using System.Linq;
-using System.Security.Claims;
-using Graph;
 using Lab.Common;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Infra.Auth;
 
 namespace AzureADLabDNSControl
@@ -62,6 +52,7 @@ namespace AzureADLabDNSControl
                 PostLogoutRedirectUri = "/",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
+                    AuthenticationFailed = AuthFailed,
                     AuthorizationCodeReceived = async (context) =>
                     {
                         await Utils.OnAuthorizationCodeReceived(context);
@@ -90,6 +81,7 @@ namespace AzureADLabDNSControl
                 PostLogoutRedirectUri = "/",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
+                    AuthenticationFailed = AuthFailed,
                     RedirectToIdentityProvider = (context) =>
                     {
                         string appBaseUrl = context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase;
@@ -112,6 +104,12 @@ namespace AzureADLabDNSControl
             };
             app.UseOpenIdConnectAuthentication(LabUserOptions);
 
+        }
+
+        private Task AuthFailed(AuthenticationFailedNotification<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage, OpenIdConnectAuthenticationOptions> arg)
+        {
+            arg.Response.Redirect(string.Format("/home?msg=", arg.Exception.Message));
+            return Task.FromResult(0);
         }
 
         private static string EnsureTrailingSlash(string value)
