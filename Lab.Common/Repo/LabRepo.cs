@@ -174,15 +174,30 @@ namespace Lab.Common.Repo
                 using (var dns = new DnsAdmin())
                 {
                     await dns.InitAsync();
-                    dns.SetClient(domGroup);
+                    try
+                    {
+                        dns.SetClient(domGroup);
+                    }
+                    catch (Exception ex)
+                    {
+                        //we may have lost our auth
+                        await Logging.WriteDebugInfoToErrorLog(string.Format("Error creating DNS client while deleting lab {0} - continuing.", lab.LabName), ex);
+                    }
                     foreach (var item in assignments)
                     {
                         if (counter == endCount)
                         {
                             return;
                         }
-
-                        await dns.RemoveChildZone(item.ParentZone, item.TeamName, item.DomainName);
+                        try
+                        {
+                            await dns.RemoveChildZone(item.ParentZone, item.TeamName, item.DomainName);
+                        }
+                        catch (Exception ex)
+                        {
+                            //we may have lost our auth
+                            await Logging.WriteDebugInfoToErrorLog(string.Format("Error deleting child zone {0} - continuing.", item.DomainName), ex);
+                        }
                         await DocDBRepo.DB<DomAssignment>.DeleteItemAsync(item);
 
                         counter--;
