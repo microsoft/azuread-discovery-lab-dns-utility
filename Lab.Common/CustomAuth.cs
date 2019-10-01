@@ -12,6 +12,7 @@ namespace Lab.Common
         public const string LabCode = "LabCode";
         public const string TeamCode = "TeamCode";
         public const string TenantName = "TenantName";
+        public const string TenantId = "http://schemas.microsoft.com/identity/claims/tenantid";
     }
 
     public static class CustomRoles
